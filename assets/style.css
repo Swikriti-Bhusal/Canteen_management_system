@@ -1,0 +1,312 @@
+/* General Styles */
+* {
+    margin: 1px;
+    padding: 2px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Header Styles */
+header {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 120px;
+}
+
+header h1 {
+    margin: 4px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #3498db;
+    background-color: #f8f9fa;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+header h1:hover {
+    background-color: #3498db;
+    color: black;
+    transform: scale(1.05);
+}
+
+h1 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Navigation Styles */
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-end;
+}
+
+nav a {
+    text-decoration: none;
+    color: #34495e;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    color: #3498db;
+    background-color: #f8f9fa;
+}
+
+nav a:active {
+    transform: scale(0.98);
+}
+
+nav a.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+}
+
+nav li:last-child a {
+    color: #3498db;
+    font-weight: 600;
+}
+
+/* Main Content Container */
+.container {
+    max-width: 1200px;
+    margin: 100px auto 2rem;
+    padding: 0 2rem;
+}
+
+/* Form Styles */
+form {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+form h1 {
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: #2c3e50;
+}
+
+.form-control {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.form-control label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #34495e;
+    font-weight: 500;
+}
+
+.form-control input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control input:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #2980b9;
+}
+
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+p {
+    text-align: center;
+    margin-top: 1rem;
+    color: #34495e;
+}
+
+p a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+p a:hover {
+    text-decoration: underline;
+}
+/*m*/
+       
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #eee;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            color: black;
+        }
+        .tab.active {
+            background: #ff6b00;
+            color: white;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .food-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .food-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .food-info {
+            padding: 15px;
+        }
+        .food-name {
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+        }
+        .food-desc {
+            color: #666;
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+        }
+        .food-price {
+            font-weight: bold;
+            color: #ff6b00;
+            font-size: 1.1rem;
+        }
+        .no-items {
+            text-align: center;
+            grid-column: 1 / -1;
+            padding: 40px;
+            color: #666;
+        }
+        .add-to-cart {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 10px;
+            background: #ff6b00;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+        }
+        .add-to-cart:hover {
+            background: #e55b00;
+        }
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .quantity-btn {
+            padding: 5px 10px;
+            background: #eee;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .quantity-input {
+            width: 40px;
+            text-align: center;
+            margin: 0 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .cart-message {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        @media (max-width: 600px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    
+    
