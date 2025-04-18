@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMS - Food Ordering System</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../cms/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     
     <style>
         .menu {
@@ -187,7 +189,6 @@ footer .social-icons a:hover {
     }
 }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -198,7 +199,7 @@ footer .social-icons a:hover {
             <nav>
                 <ul>
                     <li><a href="../index.php" class="active">Home</a></li>
-                    <li><a href="../CMS/c/users/menu.php">Menu</a></li>
+                    <li><a href="../cms/users/menu.php">Menu</a></li>
                     <li><a href="../users/aboutus.php">About</a></li>
                     <li><a href="contactus.php">Contact</a></li>
                 </ul>
@@ -229,7 +230,7 @@ footer .social-icons a:hover {
                 </div>
             </div>
             <div class="hero-image">
-            <img src="/canteen/assets/image/biryani.jpg" alt="Delicious food">
+            <img src="..\cms\uploads\main\biryani.jpg" alt="Delicious food">
             </div>
         </div>
         <section id="menu" class="menu">
@@ -237,15 +238,15 @@ footer .social-icons a:hover {
             <div class="food-items">
         
                 <div class="item"><img src="/CMS/c/uploads/cc.jpg" ><h3>Veg Chowmein</h3><p>Rs. 120</p></div>
-                <div class="item"><img src="/canteen/assets/image/Momos.jpg" ><h3>Veg Momo</h3><p>Rs. 130</p></div>
-                <div class="item"><img src="/canteen/assets/image/v burger.jpg" ><h3>Burger</h3><p>Rs. 150</p></div>
-                <div class="item"><img src="/canteen/assets/image/vpizza.jpg" ><h3>Pizza</h3><p>Rs. 400</p></div>
-                <div class="item"><img src="/canteen/assets/image/Momos.jpg" ><h3>Chicken Momo</h3><p>Rs. 150</p></div>
-                <div class="item"><img src="/canteen/assets/image/cc.jpg" ><h3>Chicken Chowmein</h3><p>Rs. 140</p></div>
-                <div class="item"><img src="/canteen/assets/image/burger.jpg" ><h3>CBurger</h3><p>Rs. 170</p></div>
-                <div class="item"><img src="/canteen/assets/image/pizza.jpg" ><h3>Chicken cheesePizza</h3><p>Rs. 350</p></div>
-                <div class="item"><img src="/canteen/assets/image/b.jpg" ><h3>Coke</h3><p>Rs. 50</p></div>
-                <div class="item"><img src="/canteen/assets/image/cof.jpg" ><h3>Coffee</h3><p>Rs. 100</p></div>
+                <div class="item"><img src="..\cms\uploads\main\chicken momo.jpg" ><h3>Veg Momo</h3><p>Rs. 130</p></div>
+                <div class="item"><img src="..\cms\uploads\main\chicken momo.jpg.jpg" ><h3>Burger</h3><p>Rs. 150</p></div>
+                <div class="item"><img src="/vpizza.jpg" ><h3>Pizza</h3><p>Rs. 400</p></div>
+                <div class="item"><img src="/Momos.jpg" ><h3>Chicken Momo</h3><p>Rs. 150</p></div>
+                <div class="item"><img src="/cc.jpg" ><h3>Chicken Chowmein</h3><p>Rs. 140</p></div>
+                <div class="item"><img src="/burger.jpg" ><h3>CBurger</h3><p>Rs. 170</p></div>
+                <div class="item"><img src="/pizza.jpg" ><h3>Chicken cheesePizza</h3><p>Rs. 350</p></div>
+                <div class="item"><img src="/b.jpg" ><h3>Coke</h3><p>Rs. 50</p></div>
+                <div class="item"><img src="..cms\uploads\desert\cof.jpg" ><h3>Coffee</h3><p>Rs. 100</p></div>
             </div>
         </section>
         <div class="feature-cards">

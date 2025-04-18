@@ -1,58 +1,46 @@
 <?php
 session_start();
-require_once '../config.php';
+require_once '../config.php'; // Contains MySQLi connection ($conn)
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-// Fetch user details
-$userStmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-$userStmt->execute([$_SESSION['user_id']]);
-$user = $userStmt->fetch();
-
 // Fetch cart items
-$cartStmt = $pdo->prepare("
-    SELECT ci.*, fi.name, fi.price 
-    FROM cart_items ci
-    JOIN food_item fi ON ci.food_id = fi.id
-    WHERE ci.user_id = ?
-");
-$cartStmt->execute([$_SESSION['user_id']]);
-$cartItems = $cartStmt->fetchAll();
+$cart_sql = "SELECT c.*, f.name, f.price 
+             FROM cart c
+             JOIN food_items f ON c.food_id = f.id
+             WHERE c.user_id = ?";
+$cart_stmt = mysqli_prepare($conn, $cart_sql);
+mysqli_stmt_bind_param($cart_stmt, "i", $_SESSION['user_id']);
+mysqli_stmt_execute($cart_stmt);
+$cart_result = mysqli_stmt_get_result($cart_stmt);
+$cartItems = mysqli_fetch_all($cart_result, MYSQLI_ASSOC);
+mysqli_stmt_close($cart_stmt);
 
+// Calculate total
 $total = 0;
 foreach ($cartItems as $item) {
     $total += $item['price'] * $item['quantity'];
 }
 
-// Handle form submission
+// Handle checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $payment_method = $_POST['payment_method'];
-    $delivery_address = $_POST['delivery_address'];
-    $special_instructions = $_POST['special_instructions'] ?? '';
-    
-    // Create order
-    $orderStmt = $pdo->prepare("
-        INSERT INTO orders (user_id, total_amount, payment_method, delivery_address, special_instructions, status)
-        VALUES (?, ?, ?, ?, ?, 'pending')
-    ");
-    $orderStmt->execute([$_SESSION['user_id'], $total, $payment_method, $delivery_address, $special_instructions]);
-    $order_id = $pdo->lastInsertId();
-    
-    // Add order items
-    foreach ($cartItems as $item) {
-        $orderItemStmt = $pdo->prepare("
-            INSERT INTO order_items (order_id, food_id, quantity, price)
-            VALUES (?, ?, ?, ?)
-        ");
-        $orderItemStmt->execute([$order_id, $item['food_id'], $item['quantity'], $item['price']]);
-    }
+    // Create simple order record
+    $order_sql = "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'completed')";
+    $order_stmt = mysqli_prepare($conn, $order_sql);
+    mysqli_stmt_bind_param($order_stmt, "id", $_SESSION['user_id'], $total);
+    mysqli_stmt_execute($order_stmt);
+    $order_id = mysqli_insert_id($conn);
+    mysqli_stmt_close($order_stmt);
     
     // Clear cart
-    $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
-    $clearCartStmt->execute([$_SESSION['user_id']]);
+    $clear_cart_sql = "DELETE FROM cart WHERE user_id = ?";
+    $clear_cart_stmt = mysqli_prepare($conn, $clear_cart_sql);
+    mysqli_stmt_bind_param($clear_cart_stmt, "i", $_SESSION['user_id']);
+    mysqli_stmt_execute($clear_cart_stmt);
+    mysqli_stmt_close($clear_cart_stmt);
     
     header("Location: order_confirmation.php?order_id=" . $order_id);
     exit;
@@ -84,42 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
             margin-bottom: 30px;
         }
-        .checkout-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        .checkout-section {
-            margin-bottom: 20px;
-        }
-        .checkout-title {
-            border-bottom: 2px solid #ff6b00;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
         .order-summary {
             background: #f9f9f9;
             padding: 15px;
             border-radius: 4px;
+            margin-bottom: 20px;
         }
         .order-item {
             display: flex;
@@ -142,74 +99,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             font-size: 1rem;
             width: 100%;
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .checkout-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="checkout-header">
-            <h1>Checkout</h1>
-            <p>Complete your order details</p>
+            <h1>Confirm Your Order</h1>
         </div>
 
         <form action="checkout.php" method="post">
-            <div class="checkout-grid">
-                <div class="checkout-left">
-                    <div class="checkout-section">
-                        <h3 class="checkout-title">Delivery Information</h3>
-                        <div class="form-group">
-                            <label for="name">Full Name</label>
-                            <input type="text" id="name" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" required>
-                        </div>
-                        
+            <div class="order-summary">
+                <?php foreach ($cartItems as $item): ?>
+                    <div class="order-item">
+                        <span><?= htmlspecialchars($item['name']) ?> (x<?= $item['quantity'] ?>)</span>
+                        <span>Rs <?= number_format($item['price'] * $item['quantity'], 2) ?></span>
                     </div>
-
-                    <div class="checkout-section">
-                        <h3 class="checkout-title">Payment Method</h3>
-                        <div class="form-group">
-                            <select id="payment_method" name="payment_method" required>
-                                <option value="">Select payment method</option>
-                                <option value="cash">Cash on Delivery</option>
-                                <option value="card">Khalti</option>
-                                
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="checkout-right">
-                    <div class="checkout-section">
-                        <h3 class="checkout-title">Order Summary</h3>
-                        <div class="order-summary">
-                            <?php foreach ($cartItems as $item): ?>
-                                <div class="order-item">
-                                    <span><?= htmlspecialchars($item['name']) ?> (x<?= $item['quantity'] ?>)</span>
-                                    <span>Rs <?= number_format($item['price'] * $item['quantity'], 2) ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                            <div class="order-total">
-                                Total: Rs <?= number_format($total, 2) ?>
-                            </div>
-                        </div>
-                    </div>
+                <?php endforeach; ?>
+                <div class="order-total">
+                    Total: Rs <?= number_format($total, 2) ?>
                 </div>
             </div>
 
-            <button type="submit" class="btn">Place Order</button>
+            <button type="submit" class="btn">Confirm Order</button>
         </form>
     </div>
 </body>

@@ -36,14 +36,11 @@ function validatePhone() {
 }
 
 function validateAddress() {
-    const address = document.getElementById('address').value;
+    const address = document.getElementById('address').value.trim();
     const addressError = document.getElementById('addressError');
     
-    // Corrected regex: It allows alphabets, digits, and spaces, with at least two digits
-    const addressPattern = /^(?=.*\d.*\d)[A-Za-z\s\d]+$/;
-
-    if (!addressPattern.test(address)) {
-        addressError.textContent = "Address should contain alphabets, two digits, and spaces.";
+    if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(address)) {
+        addressError.textContent = "Address must contain at least one alphabet and one number.";
         return false;
     } else {
         addressError.textContent = "";
@@ -51,7 +48,8 @@ function validateAddress() {
     }
 }
 
-
+   
+    
 function validatePassword() {
     const password = document.getElementById('password').value;
     const passwordError = document.getElementById('passwordError');

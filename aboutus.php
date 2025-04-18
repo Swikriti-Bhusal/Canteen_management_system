@@ -1,13 +1,28 @@
-<?php 
-session_start();
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canteen Management System</title>
-    <?php include '../includes/header.php'; ?>
+    <link rel="stylesheet" href="../cms/style.css">
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BMC CMS</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.php" class="active">Home</a></li>
+                    <li><a href="../cms/auth/login.php">Menu</a></li>
+                    <li><a href="aboutus.php">About</a></li>
+                    <li><a href="contactus.php">Contact</a></li>
+                    
+        </div>  
+                </ul>
+            </nav>
+            
+    </header>
 
     <style>
         :root {
@@ -119,7 +134,7 @@ img {
     width: 100%;
 }
 
-
+/* Header */
 header {
     background-color: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -523,17 +538,17 @@ body {
                     <h2>Meet Our Team</h2>
                     <div class="team-members">
                         <div class="team-member">
-                            <img src="/cms/uploads/swi.jpg" alt="Team Member 1">
+                            <img src="../cms/uploads/swi.jpg" alt="Team Member 1">
                             <h3>Miss swikriti</h3>
                             <p>Head Chef</p>
                         </div>
                         <div class="team-member">
-                            <img src="/cms/uploads/team1.jpg" alt="Team Member 2">
+                            <img src="../cms/uploads/team1.jpg" alt="Team Member 2">
                             <h3>Mr Zayn</h3>
                             <p>Manager</p>
                         </div>
                         <div class="team-member">
-                            <img src="/cms/uploads/team3.jpg" alt="Team Member 3">
+                            <img src="../cms/uploads/team3.jpg" alt="Team Member 3">
                             <h3>Miss Barsha</h3>
                             <p>Customer Support</p>
                         </div>
@@ -563,12 +578,10 @@ body {
                     <h3>Quick Links</h3>
                     <ul>
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="menu.php">Menu</a></li>
-                        <li><a href="about.php">About Us</a></li>
-                        <li><a href="contact.php">Contact</a></li>
-                        <li><a href="orders.php">Track Order</a></li>
+                        <li><a href="./auth/login.php">Menu</a></li>
+                        <li><a href="aboutus.php">About Us</a></li>
+                        <li><a href="contactus.php">Contact</a></li>
                     </ul>
-                </div>
                 <div class="footer-section hours">
                     <h3>Opening Hours</h3>
                     <ul>

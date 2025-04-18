@@ -1,209 +1,231 @@
 <?php
 session_start();
-include '../config.php';
+require '../config.php'; // Your existing MySQLi connection file
+
+$errors = [];
+$username = $email = $phone = $address = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $phone_no = $_POST['phone_no'];
-    $address = $_POST['address'];
-    $password = $_POST['password'];
-    $role = 'customer'; 
-
-    $checkQuery = "SELECT * FROM users WHERE email = :email";
-    $checkStmt = $pdo->prepare($checkQuery);
-    $checkStmt->execute([':email' => $email]);
-
-    if ($checkStmt->rowCount() > 0) {
-        echo "Email already exists. Try logging in or use a different one.";
-        exit();
+    // Get form data
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $password = $_POST['password'] ?? '';
+    
+    // Validate inputs
+    if (empty($username)) {
+        $errors['username'] = "Username is required";
+    } elseif (strlen($username) < 4) {
+        $errors['username'] = "Username must be at least 4 characters";
     }
-
-   
-    $query = "INSERT INTO users (username, email, phone_no, address, password, role)
-              VALUES (:username, :email, :phone_no, :address, :password, :role)";
-    $stmt = $pdo->prepare($query);
-    $stmt->execute([
-        ':username' => $username,
-        ':email' => $email,
-        ':phone_no' => $phone_no,
-        ':address' => $address,
-        ':password' => $password,
-        ':role' => $role
-    ]);
-
-    header("Location: login.php");
-    exit();
+    
+    if (empty($email)) {
+        $errors['email'] = "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = "Invalid email format";
+    }
+    
+    if (empty($phone)) {
+        $errors['phone'] = "Phone number is required";
+    } elseif (!preg_match('/^[0-9]{10,15}$/', $phone)) {
+        $errors['phone'] = "Invalid phone number format";
+    }
+    
+    if (empty($address)) {
+        $errors['address'] = "Address is required";
+    }
+    
+    if (empty($password)) {
+        $errors['password'] = "Password is required";
+    }
+    
+    // Check if username/email already exists
+    if (empty($errors)) {
+        $check_query = "SELECT * FROM users WHERE username = ? OR email = ?";
+        $stmt = $conn->prepare($check_query);
+        $stmt->bind_param("ss", $username, $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $errors['general'] = "Username or email already exists";
+        }
+        $stmt->close();
+    }
+    
+    // If no errors, create user
+    if (empty($errors)) {
+        $role = 'user'; // Default role
+        
+        $insert_query = "INSERT INTO users (username, email, phone, address, password, role) 
+                        VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($insert_query);
+        $stmt->bind_param("ssssss", $username, $email, $phone, $address, $password, $role);
+        
+        if ($stmt->execute()) {
+            $_SESSION['signup_success'] = "Registration successful! ";
+            header("Location: ../users/menu.php");
+            exit();
+        } else {
+            $errors['general'] = "Registration failed: " . $conn->error;
+        }
+        $stmt->close();
+    }
 }
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteen Management System</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <title>Canteen Management System - Sign Up</title>
+    <link rel="stylesheet" href="../cms/assets/style.css">
     <style>
-        /* Signup Form Container */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f8fa;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 10vh;
-    margin: 0;
-    padding: 10px;
-}
-
-/* Form Styling */
-form {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    width: 100%;
-    max-width: 500px;
-    margin: 10px 0;
-}
-
-h1 {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 25px;
-    font-size: 28px;
-}
-
-/* Form Elements Styling */
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #34495e;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="tel"],
-textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 19px;
-    margin-bottom: 5px;
-    transition: border-color 0.3s;
-}
-
-textarea {
-    min-height: 3px;
-    resize: vertical;
-}
-
-input:focus, textarea:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-}
-
-/* Error Message Styling */
-span[style="color: red;"] {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 15px;
-    height: 18px;
-}
-
-/* Button Styling */
-button[type="submit"] {
-    width: 100%;
-    padding: 14px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
-}
-
-button[type="submit"]:hover {
-    background-color: #2980b9;
-}
-
-/* Login Link Styling */
-p {
-    text-align: center;
-    color: #7f8c8d;
-    margin-top: 20px;
-}
-
-p a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-p a:hover {
-    text-decoration: underline;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    form {
-        padding: 20px;
-    }
-    
-    h1 {
-        font-size: 24px;
-    }
-    
-    input, textarea, button {
-        padding: 10px;
-    }
-}
-</style>
-
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .success {
+            color: green;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        p {
+            text-align: center;
+            margin-top: 20px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<h1>Sign Up</h1>
-<form action="signup.php" method="POST" onsubmit="return validateForm()">
-    <label for="username">Username:</label>
-    <input type="text" name="username" id="username" required>
-    <span id="usernameError" style="color: red;"></span>
-    <br>
+<body>
+    <h1>Sign Up</h1>
+    
+    <?php if (!empty($errors['general'])): ?>
+        <div class="error"><?php echo $errors['general']; ?></div>
+    <?php endif; ?>
+    
+    <form method="POST" action="">
+        <div class="form-row">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" 
+                   value="<?php echo htmlspecialchars($username); ?>" required>
+            <?php if (!empty($errors['username'])): ?>
+                <div class="error"><?php echo $errors['username']; ?></div>
+            <?php endif; ?>
+        </div>
 
-    <label for="email">Email:</label>
-    <input type="email" name="email" id="email" required>
-    <span id="emailError" style="color: red;"></span>
-    <br>
+        <div class="form-row">
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" 
+                   value="<?php echo htmlspecialchars($email); ?>" required>
+            <?php if (!empty($errors['email'])): ?>
+                <div class="error"><?php echo $errors['email']; ?></div>
+            <?php endif; ?>
+        </div>
 
-    <label for="phone_no">Phone Number:</label>
-    <input type="text" name="phone_no" id="phone_no" required>
-    <span id="phoneError" style="color: red;"></span>
-    <br>
+        <div class="form-row">
+            <label for="phone">Phone:</label>
+            <input type="tel" name="phone" id="phone" 
+                   value="<?php echo htmlspecialchars($phone); ?>" required>
+            <?php if (!empty($errors['phone'])): ?>
+                <div class="error"><?php echo $errors['phone']; ?></div>
+            <?php endif; ?>
+        </div>
 
-    <label for="address">Address:</label>
-    <textarea name="address" id="address" required></textarea>
-    <span id="addressError" style="color: red;"></span>
-    <br>
+        <div class="form-row">
+            <label for="address">Address:</label>
+            <textarea name="address" id="address" required><?php echo htmlspecialchars($address); ?></textarea>
+            <?php if (!empty($errors['address'])): ?>
+                <div class="error"><?php echo $errors['address']; ?></div>
+            <?php endif; ?>
+        </div>
 
-    <label for="password">Password:</label>
-    <input type="password" name="password" id="password" required>
-    <span id="passwordError" style="color: red;"></span>
-    <br>
+        <div class="form-row">
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" required>
+            <?php if (!empty($errors['password'])): ?>
+                <div class="error"><?php echo $errors['password']; ?></div>
+            <?php endif; ?>
+        </div>
 
-    <button type="submit">Sign Up</button>
-</form>
+        <button type="submit">Sign Up</button>
+    </form>
 
-<p>Already have an account? <a href="login.php">Login here</a>.</p>
-<script src="/cms/assets/script.js"></script>
+    <p>Already have an account? <a href="login.php">Login here</a></p>
 
+    <script>
+        // Client-side validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            let valid = true;
+            
+            // Validate username
+            const username = document.getElementById('username').value.trim();
+            if (username.length < 4) {
+                document.getElementById('usernameError').textContent = 'Username must be at least 4 characters';
+                valid = false;
+            } else {
+                document.getElementById('usernameError').textContent = '';
+            }
+            
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
 </html>

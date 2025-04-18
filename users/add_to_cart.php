@@ -3,29 +3,20 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$host = 'localhost';
-$dbname = 'food_menu';
-$username = 'root';
-$password = '';
+require '../config.php'; // Ensure this contains your MySQLi connection ($conn)
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
-
-// Debug: Check session
+// Debugging: Log session and POST data
 error_log("Session data: " . print_r($_SESSION, true));
+error_log("POST data: " . print_r($_POST, true));
 
-// Redirect if not logged in
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     error_log("User not logged in, redirecting");
     header("Location: ../auth/login.php");
     exit();
 }
 
-// Validate POST data
+// Process only POST requests with food_id
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['food_id'])) {
     $user_id = $_SESSION['user_id'];
     $food_id = intval($_POST['food_id']);
@@ -34,35 +25,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['food_id'])) {
     error_log("Adding to cart - User: $user_id, Food: $food_id, Qty: $quantity");
 
     try {
-        // Check if item already exists in cart
-        $stmt = $pdo->prepare("SELECT * FROM cart WHERE user_id = ? AND food_id = ?");
-        $stmt->execute([$user_id, $food_id]);
-        $existingItem = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existingItem) {
-            // Update quantity if item exists
-            $newQuantity = $existingItem['quantity'] + $quantity;
-            $updateStmt = $pdo->prepare("UPDATE cart SET quantity = ? WHERE id = ?");
-            $updateStmt->execute([$newQuantity, $existingItem['id']]);
-            error_log("Updated existing cart item");
-        } else {
-            // Insert new item
-            $insertStmt = $pdo->prepare("INSERT INTO cart (user_id, food_id, quantity) VALUES (?, ?, ?)");
-            $insertStmt->execute([$user_id, $food_id, $quantity]);
-            error_log("Added new cart item");
+        // Single query that handles both new items and quantity updates
+        $sql = "INSERT INTO cart (user_id, food_id, quantity) 
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)";
+        
+        $stmt = mysqli_prepare($conn, $sql);
+        
+        if (!$stmt) {
+            throw new Exception("Prepare failed: " . mysqli_error($conn));
         }
 
-        // Redirect back to menu with success message
+        mysqli_stmt_bind_param($stmt, "iii", $user_id, $food_id, $quantity);
+        
+        if (!mysqli_stmt_execute($stmt)) {
+            throw new Exception("Execute failed: " . mysqli_stmt_error($stmt));
+        }
+
+        mysqli_stmt_close($stmt);
+        
+        error_log("Cart updated successfully");
         $_SESSION['cart_message'] = "Item added to cart!";
         header("Location: /cms/users/cart.php");
         exit();
 
-    } catch (PDOException $e) {
-        error_log("Database error: " . $e->getMessage());
-        die("Database error: " . $e->getMessage());
+    } catch (Exception $e) {
+        error_log("Error in cart operation: " . $e->getMessage());
+        $_SESSION['error'] = "Failed to update cart. Please try again.";
+        header("Location: ../users/menu.php");
+        exit();
     }
 } else {
-    // Invalid request
     error_log("Invalid request method or missing food_id");
     header("Location: ../users/menu.php");
     exit();

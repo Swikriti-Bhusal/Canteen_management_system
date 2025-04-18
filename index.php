@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CMS - Food Ordering System</title>
     <link rel="stylesheet" href="../cms/style.css">
-    
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         .menu {
             padding: 50px 20px;
@@ -190,7 +192,6 @@ footer .social-icons a:hover {
     }
 }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -202,8 +203,8 @@ footer .social-icons a:hover {
                 <ul>
                     <li><a href="../cms/index.php" class="active">Home</a></li>
                     <li><a href="../cms/auth/login.php">Menu</a></li>
-                    <li><a href="../cms/users/aboutus.php">About</a></li>
-                    <li><a href="../cms/users/contactus.php">Contact</a></li>
+                    <li><a href="../cms/aboutus.php">About</a></li>
+                    <li><a href="../cms/contactus.php">Contact</a></li>
                 </ul>
             </nav>
             <div class="header-icons">
@@ -224,30 +225,30 @@ footer .social-icons a:hover {
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Campus Canteen Management System</h1>
+                <h1>Canteen <br>Management System</h1>
                 <p>Order your favorite meals online, pay with ease, and enjoy delicious food without the wait.</p>
                 <div class="hero-buttons">
-                    <a href="../cms/users/menu.php" class="btn btn-primary">Order Now <i class="fas fa-arrow-right"></i></a>
+                    <a href="../cms/auth/login.php" class="btn btn-primary">Order Now <i class="fas fa-arrow-right"></i></a>
                     <a href="../cms/users/aboutus.php" class="btn btn-outline">Learn More</a>
                 </div>
             </div>
             <div class="hero-image">
-            <img src="/canteen/assets/image/biryani.jpg" alt="Delicious food">
+            <img src="..\cms\uploads\main\biryani.jpg" alt="Delicious food">
             </div>
         </div>
         <section id="menu" class="menu">
             <h2>Available Items</h2>
             <div class="food-items">
         
-                <div class="item"><img src="/canteen/assets/image/Momos.jpg" ><h3>Veg Momo</h3><p>Rs. 130</p></div>
-                <div class="item"><img src="/canteen/assets/image/v burger.jpg" ><h3>Burger</h3><p>Rs. 150</p></div>
-                <div class="item"><img src="/canteen/assets/image/vpizza.jpg" ><h3>Pizza</h3><p>Rs. 400</p></div>
-                <div class="item"><img src="/canteen/assets/image/Momos.jpg" ><h3>Chicken Momo</h3><p>Rs. 150</p></div>
-                <div class="item"><img src="/canteen/assets/image/cc.jpg" ><h3>Chicken Chowmein</h3><p>Rs. 140</p></div>
-                <div class="item"><img src="/canteen/assets/image/burger.jpg" ><h3>CBurger</h3><p>Rs. 170</p></div>
-                <div class="item"><img src="/canteen/assets/image/pizza.jpg" ><h3>Chicken cheesePizza</h3><p>Rs. 350</p></div>
-                <div class="item"><img src="/canteen/assets/image/b.jpg" ><h3>Coke</h3><p>Rs. 50</p></div>
-                <div class="item"><img src="/canteen/assets/image/cof.jpg" ><h3>Coffee</h3><p>Rs. 100</p></div>
+                <div class="item"><img src="..\cms\uploads\main\veg momo.jpg" ><h3>Veg Momo</h3><p>Rs. 130</p></div>
+                <div class="item"><img src="..\cms\uploads\main\v burger.jpg" ><h3>Burger</h3><p>Rs. 150</p></div>
+                <div class="item"><img src="..\cms\uploads\pizza.jpg" ><h3>Pizza</h3><p>Rs. 400</p></div>
+                <div class="item"><img src="..\cms\uploads\main\chicken momo.jpg" ><h3>Chicken Momo</h3><p>Rs. 150</p></div>
+                <div class="item"><img src="..\cms\uploads\main\cc.jpg" ><h3>Chicken Chowmein</h3><p>Rs. 140</p></div>
+                <div class="item"><img src="..\cms\uploads\main\v burger.jpg" ><h3>CBurger</h3><p>Rs. 170</p></div>
+                <div class="item"><img src="..\cms\uploads\main\pzza.jpg" ><h3>Chicken cheesePizza</h3><p>Rs. 350</p></div>
+                <div class="item"><img src="..\cms\uploads\desert\cocacola.jpg" ><h3>Coke</h3><p>Rs. 50</p></div>
+                <div class="item"><img src="..\cms\uploads\desert\cof.jpg" ><h3>Coffee</h3><p>Rs. 100</p></div>
             </div>
         </section>
         <div class="feature-cards">
@@ -257,7 +258,7 @@ footer .social-icons a:hover {
                 </div>
                 <h3>Browse Menu</h3>
                 <p>Explore our wide variety of meals and snacks</p>
-                <a href="../cms/users/menu.php" class="btn btn-outline">View Menu <i class="fas fa-chevron-right"></i></a>
+                <a href="../cms/auth/login.php" class="btn btn-outline">View Menu <i class="fas fa-chevron-right"></i></a>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
@@ -265,7 +266,7 @@ footer .social-icons a:hover {
                 </div>
                 <h3>Order Online</h3>
                 <p>Skip the line and order ahead</p>
-                <a href="../cms/users/menu.php" class="btn btn-primary">Order Now <i class="fas fa-chevron-right"></i></a>
+                <a href="../cms/auth/login.php" class="btn btn-primary">Order Now <i class="fas fa-chevron-right"></i></a>
             </div>
     </section>
     <footer>
@@ -284,10 +285,9 @@ footer .social-icons a:hover {
                     <h3>Quick Links</h3>
                     <ul>
                         <li><a href="index.php">Home</a></li>
-                        <li><a href="menu.php">Menu</a></li>
-                        <li><a href="about.php">About Us</a></li>
-                        <li><a href="contact.php">Contact</a></li>
-                        <li><a href="orders.php">Track Order</a></li>
+                        <li><a href="./auth/login.php">Menu</a></li>
+                        <li><a href="aboutus.php">About Us</a></li>
+                        <li><a href="contactus.php">Contact</a></li>
                     </ul>
                 </div>
                 <div class="footer-section hours">

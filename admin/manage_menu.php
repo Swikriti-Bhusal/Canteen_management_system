@@ -1,17 +1,16 @@
 <?php
-require '../config.php';
+require '../config.php'; 
 
-// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add'])) {
-        // Add new item - requires image
         $targetDir = "../uploads/";
         $imageName = basename($_FILES["image"]["name"]);
-        $targetFile = $targetDir . uniqid() . '_' . $imageName;
+
+$filename = uniqid() . '_' . $imageName;
+$targetFile = $targetDir . $filename;
         $uploadOk = 1;
         $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
-        // Check if image file is a actual image or fake image
         if ($_FILES["image"]["tmp_name"]) {
             $check = getimagesize($_FILES["image"]["tmp_name"]);
             if($check === false) {
@@ -22,107 +21,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Image is required for new items.";
             $uploadOk = 0;
         }
-
-        // Check file size (max 2MB)
         if ($_FILES["image"]["size"] > 2000000) {
             echo "Sorry, your file is too large.";
             $uploadOk = 0;
         }
 
-        // Allow certain file formats
         if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
         && $imageFileType != "gif" ) {
             echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
             $uploadOk = 0;
         }
-
         if ($uploadOk == 1 && move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-            $stmt = $pdo->prepare("INSERT INTO food_items (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([
-                $_POST['name'],
-                $_POST['description'],
-                $_POST['price'],
-                $targetFile,
-                $_POST['category']
-            ]);
+            $stmt = $conn->prepare("INSERT INTO food_items (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssdss", $_POST['name'], $_POST['description'], $_POST['price'], $filename, $_POST['category']);
+            // $stmt->bind_param("ssdss", $_POST['name'], $_POST['description'], $_POST['price'], $targetFile, $_POST['category']);
+            $stmt->execute();
+            $stmt->close();
         }
     } elseif (isset($_POST['update'])) {
-        // Update item - image is optional
         if ($_FILES["image"]["size"] > 0) {
-            // New image was uploaded
             $targetDir = "../uploads/";
             $imageName = basename($_FILES["image"]["name"]);
             $targetFile = $targetDir . uniqid() . '_' . $imageName;
             $uploadOk = 1;
             $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
-            // Check if image file is a actual image or fake image
             $check = getimagesize($_FILES["image"]["tmp_name"]);
             if($check === false) {
                 echo "File is not an image.";
                 $uploadOk = 0;
             }
 
-            // Check file size (max 2MB)
             if ($_FILES["image"]["size"] > 2000000) {
                 echo "Sorry, your file is too large.";
                 $uploadOk = 0;
             }
 
-            // Allow certain file formats
+            
             if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
             && $imageFileType != "gif" ) {
                 echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
                 $uploadOk = 0;
             }
-
+            
             if ($uploadOk == 1 && move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile)) {
-                // Delete old image if exists
                 if (!empty($_POST['old_image']) && file_exists($_POST['old_image'])) {
                     unlink($_POST['old_image']);
                 }
                 
-                $stmt = $pdo->prepare("UPDATE food_items SET name = ?, description = ?, price = ?, image = ?, category = ? WHERE id = ?");
-                $stmt->execute([
-                    $_POST['name'],
-                    $_POST['description'],
-                    $_POST['price'],
-                    $targetFile,
-                    $_POST['category'],
-                    $_POST['id']
-                ]);
+                $stmt = $conn->prepare("UPDATE food_items SET name = ?, description = ?, price = ?, image = ?, category = ? WHERE id = ?");
+                $stmt->bind_param("ssdssi", $_POST['name'], $_POST['description'], $_POST['price'], $targetFile, $_POST['category'], $_POST['id']);
+                $stmt->execute();
+                $stmt->close();
             }
         } else {
-            // Update without changing image
-            $stmt = $pdo->prepare("UPDATE food_items SET name = ?, description = ?, price = ?, category = ? WHERE id = ?");
-            $stmt->execute([
-                $_POST['name'],
-                $_POST['description'],
-                $_POST['price'],
-                $_POST['category'],
-                $_POST['id']
-            ]);
+            $stmt = $conn->prepare("UPDATE food_items SET name = ?, description = ?, price = ?, category = ? WHERE id = ?");
+            $stmt->bind_param("ssdsi", $_POST['name'], $_POST['description'], $_POST['price'], $_POST['category'], $_POST['id']);
+            $stmt->execute();
+            $stmt->close();
         }
     }
 } elseif (isset($_GET['delete'])) {
-    // Delete item
-    // First get image path to delete the file
-    $stmt = $pdo->prepare("SELECT image FROM food_items WHERE id = ?");
-    $stmt->execute([$_GET['delete']]);
-    $imagePath = $stmt->fetchColumn();
+    $stmt = $conn->prepare("SELECT image FROM food_items WHERE id = ?");
+    $stmt->bind_param("i", $_GET['delete']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $imagePath = $result->fetch_assoc()['image'];
+    $stmt->close();
     
     if ($imagePath && file_exists($imagePath)) {
         unlink($imagePath);
     }
     
-    // Then delete the record
-    $stmt = $pdo->prepare("DELETE FROM food_items WHERE id = ?");
-    $stmt->execute([$_GET['delete']]);
+    $stmt = $conn->prepare("DELETE FROM food_items WHERE id = ?");
+    $stmt->bind_param("i", $_GET['delete']);
+    $stmt->execute();
+    $stmt->close();
 }
 
-// Get all food items for display
-$stmt = $pdo->query("SELECT * FROM food_items");
-$foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all food items
+$result = $conn->query("SELECT * FROM food_items");
+$foodItems = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -158,7 +137,7 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <h1>Food Menu Admin</h1>
     
-    <!-- Add/Edit Form -->
+    
     <form method="post" enctype="multipart/form-data" id="foodForm">
         <input type="hidden" name="id" id="itemId">
         <input type="hidden" name="old_image" id="oldImage">
@@ -226,7 +205,7 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </table>
     
     <script>
-        // Validation functions
+    
         function validateName(name) {
             const regex = /^[a-zA-Z\s]+$/;
             return regex.test(name);
@@ -281,7 +260,7 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
         
-        // Real-time validation
+        
         document.getElementById('itemName').addEventListener('input', function() {
             const name = this.value.trim();
             const nameError = document.getElementById('nameError');
@@ -371,4 +350,5 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
     <script src="/cms/assets/script.js"></script>
 </body>
-</html>
+</html> 
+

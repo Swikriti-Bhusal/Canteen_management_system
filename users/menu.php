@@ -1,32 +1,29 @@
-<?php 
+
+<?php
 session_start();
 require '../config.php';
 
-
-// Get all food items or filter by category
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 
 if ($category === 'All') {
-    $stmt = $pdo->query("SELECT * FROM food_items");
+    $result = $conn->query("SELECT * FROM food_items"); // Direct query
+    $foodItems = $result->fetch_all(MYSQLI_ASSOC); // Requires mysqlnd
 } else {
-    $stmt = $pdo->prepare("SELECT * FROM food_items WHERE category = ?");
-    $stmt->execute([$category]);
+    $stmt = $conn->prepare("SELECT * FROM food_items WHERE category = ?");
+    $stmt->bind_param("s", $category); // MySQLi-style binding
+    $stmt->execute();
+    $result = $stmt->get_result(); // Get result set
+    $foodItems = $result->fetch_all(MYSQLI_ASSOC); // Fetch all rows
 }
-
-$foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <?php include '../includes/header.php'; ?>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
     <title>Our Menu</title>
-    <link rel="stylesheet" href="cms/style.css">
-    
+    <link rel="stylesheet" href="./cms/style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,6 +31,7 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 20px;
             background-color: #f5f5f5;
         }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -167,7 +165,8 @@ $foodItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
 
-    </header>
+
+</header>
     <div class="container">
         <div class="header">
             

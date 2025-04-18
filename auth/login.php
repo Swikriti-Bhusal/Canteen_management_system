@@ -1,45 +1,62 @@
-<?php
+
+<?php 
 session_start();
-include '../config.php';
+include '../config.php'; 
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']); // Remove extra spaces
-    $password = trim($_POST['password']); // Remove extra spaces
+    $email = trim($_POST['email']); 
+    $password = trim($_POST['password']); 
 
-    // Debugging: Print the submitted email and password
+
     echo "Submitted Email: $email<br>";
     echo "Submitted Password: $password<br>";
 
-    // Fetch user from the database
-    $query = "SELECT * FROM users WHERE email = :email";
-    $stmt = $pdo->prepare($query);
+
     
-    $stmt->execute([':email' => $email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $query = "SELECT * FROM users WHERE email = ?";
+    $stmt = $conn->prepare($query);  // prepare the SQL
 
-    // Debugging: Print the user data fetched from the database
-    echo "User Data from Database:<br>";
-    print_r($user);
 
-    if ($user && $password === $user['password']) { // Compare plain passwords
-        // Login successful
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+    if ($stmt) {
+        $stmt->bind_param("s", $email); // "s" = string type
+        $stmt->execute();
 
-        // Redirect based on role
-        if ($user['role'] === 'admin') {
-            header("Location: ../admin/index.php");
+
+        $result = $stmt->get_result(); // get result from query
+        $user = $result->fetch_assoc(); // fetch as associative array
+
+
+        echo "User Data from Database:<br>";
+        print_r($user);
+
+
+       
+        if ($user && $password === $user['password']) { 
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+
+
+            
+            if ($user['role'] === 'admin') {
+                header("Location: ../admin/index.php");
+            } else {
+                header("Location: ../users/menu.php");
+            }
+            exit();
         } else {
-            header("Location: ../users/menu.php");
+            $error = "Invalid email or password.";
         }
-        exit();
+
+
+        $stmt->close(); 
     } else {
-        // Login failed
-        $error = "Invalid email or password.";
+        $error = "Database error: " . $conn->error;
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -52,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
         <h1>Login</h1>
+
 
     <main>
         <?php if (isset($error)): ?>
@@ -73,7 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p>Don't have an account? <a href="signup.php">Sign up here</a>.</p>
     </main>
 
+
     
-    <script src="../assets/js/script.js"></script>
+    <script src="../assets/script.js"></script>
 </body>
 </html>

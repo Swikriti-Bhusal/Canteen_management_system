@@ -1,13 +1,30 @@
-<?php 
-session_start();
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - Canteen Management System</title>
-    <?php include '../includes/header.php'; ?>
+    <link rel="stylesheet" href="../cms/style.css">
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>BMC CMS</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="../users/menu.php" class="active">Home</a></li>
+                    <li><a href="../cms/auth/login.php">Menu</a></li>
+                    <li><a href="../cms/aboutus.php">About</a></li>
+                    <li><a href="../cms/contactus.php">Contact</a></li>
+                    
+        </div>  
+                </ul>
+            </nav>
+            
+
+        </div>
+    </header>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>

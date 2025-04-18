@@ -2,34 +2,42 @@
 session_start();
 require '../config.php';
 
-// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../users/login.php");
     exit();
 }
 
+// Get cart items with food details for the current user
 $user_id = $_SESSION['user_id'];
-
-try {
-    // Get cart items with food details
-    $stmt = $pdo->prepare("
-        SELECT c.*, f.name, f.price, f.image 
+$sql = "SELECT c.id as cart_id, c.quantity, c.created_at, 
+               f.id as food_id, f.name, f.price, f.image 
         FROM cart c
         JOIN food_items f ON c.food_id = f.id
         WHERE c.user_id = ?
-    ");
-    $stmt->execute([$user_id]);
-    $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ORDER BY c.created_at DESC";
 
-    // Calculate total
-    $total = 0;
-    foreach ($cartItems as $item) {
-        $total += $item['price'] * $item['quantity'];
-    }
-} catch (PDOException $e) {
-    die("Error fetching cart items: " . $e->getMessage());
+$stmt = mysqli_prepare($conn, $sql);
+
+if ($stmt === false) {
+    die("Error preparing statement: " . mysqli_error($conn));
+}
+
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+if (!mysqli_stmt_execute($stmt)) {
+    die("Error executing statement: " . mysqli_stmt_error($stmt));
+}
+
+$result = mysqli_stmt_get_result($stmt);
+$cartItems = mysqli_fetch_all($result, MYSQLI_ASSOC);
+mysqli_stmt_close($stmt);
+
+$total = 0;
+foreach ($cartItems as $item) {
+    $total += $item['price'] * $item['quantity'];
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -37,9 +45,9 @@ try {
 <?php include '../includes/header.php'; ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <title>Your Cart</title>
     <style>
+        /* Your existing CSS styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -126,14 +134,12 @@ try {
         }
     </style>
 </head>
-<body>
-
-<div class="container">
+<body><div class="container">
     <div class="cart-header">
         <h1>Your Shopping Cart</h1>
     </div>
 
-    <?php if (count($cartItems) > 0): ?>
+    <?php if (!empty($cartItems)): ?>
         <table class="cart-table">
             <thead>
                 <tr>
@@ -149,24 +155,31 @@ try {
                     <tr>
                         <td>
                             <div style="display: flex; align-items: center;">
-                                <img src="../../cms/uploads/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="cart-item-img">
+                                <img src="../../cms/uploads/<?= htmlspecialchars($item['image']) ?>" 
+                                     alt="<?= htmlspecialchars($item['name']) ?>" 
+                                     class="cart-item-img">
                                 <span style="margin-left: 10px;"><?= htmlspecialchars($item['name']) ?></span>
                             </div>
                         </td>
-                        <td>Rs<?= number_format($item['price'], 0) ?></td>
+                        <td>Rs<?= number_format($item['price'], 2) ?></td>
                         <td>
                             <div class="quantity-control">
                                 <form action="../users/update_cart.php" method="post" style="display: flex;">
-                                    <input type="hidden" name="cart_id" value="<?= $item['id'] ?>">
+                                    <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
                                     <button type="submit" name="action" value="decrease" class="quantity-btn">-</button>
                                     <span class="quantity-input"><?= $item['quantity'] ?></span>
                                     <button type="submit" name="action" value="increase" class="quantity-btn">+</button>
                                 </form>
                             </div>
                         </td>
-                        <td>Rs<?= number_format($item['price'] * $item['quantity'], 0) ?></td>
-                        
-                        <td><a href="../users/remove_from_cart.php?id=<?= $item['id'] ?>" class="remove-btn">Remove</a></td>
+                        <td>Rs<?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                        <td>
+                            <a href="../users/remove_from_cart.php?id=<?= $item['cart_id'] ?>" 
+                               class="remove-btn"
+                               onclick="return confirm('Are you sure you want to remove this item?')">
+                                Remove
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -175,17 +188,35 @@ try {
         <div class="cart-summary">
             <div class="summary-box">
                 <h3>Order Summary</h3>
-                <p>Total: Rs<?= number_format($total, 0) ?></p>
+                <p>Total: Rs<?= number_format($total, 2) ?></p>
                 <a href="checkout.php" class="checkout-btn">Proceed to Checkout</a>
-                <a href="/cms/users/menu.php" class="checkout-btn">Back To Menu</a>
+                <a href="/cms/users/menu.php" class="checkout-btn" style="background: #6c757d; margin-top: 10px;">
+                    Back To Menu
+                </a>
             </div>
         </div>
     <?php else: ?>
         <div class="empty-cart">
             <p>Your cart is empty</p>
-            <a href="/cms/users/menu.php" class="btn">Browse Menu</a>
+            <a href="/cms/users/menu.php" class="checkout-btn" style="background: #6c757d; display: inline-block; width: auto;">
+                Browse Menu
+            </a>
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+    // Simple confirmation for remove action
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (!confirm('Are you sure you want to remove this item?')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
+
+
