@@ -1,6 +1,6 @@
 <?php
 session_start();
-require '../config.php'; // Your existing MySQLi connection file
+require '../config.php'; // existing MySQLi connection file
 
 $errors = [];
 $username = $email = $phone = $address = '';
@@ -14,31 +14,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     // Validate inputs
-    if (empty($username)) {
-        $errors['username'] = "Username is required";
-    } elseif (strlen($username) < 4) {
-        $errors['username'] = "Username must be at least 4 characters";
-    }
-    
-    if (empty($email)) {
-        $errors['email'] = "Email is required";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = "Invalid email format";
-    }
-    
-    if (empty($phone)) {
-        $errors['phone'] = "Phone number is required";
-    } elseif (!preg_match('/^[0-9]{10,15}$/', $phone)) {
-        $errors['phone'] = "Invalid phone number format";
-    }
-    
-    if (empty($address)) {
-        $errors['address'] = "Address is required";
-    }
-    
-    if (empty($password)) {
-        $errors['password'] = "Password is required";
-    }
+if (empty($username)) {
+    $errors['username'] = "Username is required";
+} elseif (strlen($username) < 4) {
+    $errors['username'] = "Username must be at least 4 characters";
+} elseif (!preg_match('/^[A-Za-z]+$/', $username)) {
+    $errors['username'] = "Username can only contain letters (no numbers/symbols)";
+}
+
+if (empty($email)) {
+    $errors['email'] = "Email is required";
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors['email'] = "Invalid email format";
+} elseif (preg_match('/^\d+@/', $email)) {
+    $errors['email'] = "Email cannot start with numbers (e.g., 1@gmail.com)";
+}
+
+if (empty($phone)) {
+    $errors['phone'] = "Phone number is required";
+} elseif (!preg_match('/^\d{10}$/', $phone)) {
+    $errors['phone'] = "Phone must be 10 digits";
+} elseif (preg_match('/^(\d)\1{9}$/', $phone)) {
+    $errors['phone'] = "Phone cannot be all repeating digits";
+}
+
+if (empty($address)) {
+    $errors['address'] = "Address is required";
+} elseif (!preg_match('/[A-Za-z]/', $address)) {
+    $errors['address'] = "Address must contain at least 1 letter";
+}
+
+if (empty($password)) {
+    $errors['password'] = "Password is required";
+} elseif (strlen($password) < 4) {
+    $errors['password'] = "Password must be at least 4 characters";
+} elseif (!preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password)) {
+    $errors['password'] = "Password must contain at least 1 letter and 1 number";
+}
+  
     
     // Check if username/email already exists
     if (empty($errors)) {
@@ -56,12 +69,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // If no errors, create user
     if (empty($errors)) {
-        $role = 'user'; // Default role
+        $level = 2;  // Default level
         
-        $insert_query = "INSERT INTO users (username, email, phone, address, password, role) 
+        $insert_query = "INSERT INTO users (username, email, phone, address, password, level) 
                         VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insert_query);
-        $stmt->bind_param("ssssss", $username, $email, $phone, $address, $password, $role);
+        $stmt->bind_param("ssssss", $username, $email, $phone, $address, $password, $level);
         
         if ($stmt->execute()) {
             $_SESSION['signup_success'] = "Registration successful! ";

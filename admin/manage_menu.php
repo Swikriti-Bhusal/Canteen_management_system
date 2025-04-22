@@ -111,6 +111,44 @@ $foodItems = $result->fetch_all(MYSQLI_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
     <style>
+         .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #2c3e50;
+            color: white;
+        }
+
+
+.admin-header ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-header li {
+    margin-right: 1.5rem;
+    position: relative;
+}
+
+.admin-header a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
         body { 
             font-family: Arial, sans-serif; 
               margin: 20px;
@@ -135,9 +173,20 @@ $foodItems = $result->fetch_all(MYSQLI_ASSOC);
     </style>
 </head>
 <body>
-    <h1>Food Menu Admin</h1>
-    
-    
+<body class="bg-gray-100">
+    <header class="admin-header">
+    <ul>
+                    <li><a href="index.php" class="active">Dashboard</a></li>
+                    <li><a href="orders.php">Orders</a></li>
+                    <li><a href="manage_menu.php">Menu</a></li>
+                    <li><a href="manage_users.php">Users</a></li>
+                    <li><a href="../auth/logout.php">Logout</a></li>
+                </ul>
+    </header>
+
+
+    <h1 style="text-align: center;">Food Menu Admin</h1>
+
     <form method="post" enctype="multipart/form-data" id="foodForm">
         <input type="hidden" name="id" id="itemId">
         <input type="hidden" name="old_image" id="oldImage">

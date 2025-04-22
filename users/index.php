@@ -160,34 +160,6 @@ footer .social-icons a:hover {
     color: #3498db;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    footer .footer-content {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    footer .footer-section {
-        text-align: center;
-    }
-
-    footer .contact-info p {
-        justify-content: center;
-    }
-
-    footer .footer-section.newsletter form {
-        flex-direction: column;
-    }
-
-    footer .footer-section.newsletter input[type="email"] {
-        width: 100%;
-    }
-
-    footer .footer-section.newsletter button {
-        width: 100%;
-    }
-}
     </style>
 </head>
 <body>
@@ -202,6 +174,7 @@ footer .social-icons a:hover {
                     <li><a href="../cms/users/menu.php">Menu</a></li>
                     <li><a href="../users/aboutus.php">About</a></li>
                     <li><a href="contactus.php">Contact</a></li>
+                   
                 </ul>
             </nav>
             <div class="header-icons">

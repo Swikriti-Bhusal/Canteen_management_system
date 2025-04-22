@@ -1,45 +1,27 @@
-
 <?php 
 session_start();
-include '../config.php'; 
-
+include '../config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']); 
     $password = trim($_POST['password']); 
-
-
-    echo "Submitted Email: $email<br>";
-    echo "Submitted Password: $password<br>";
-
-
     
     $query = "SELECT * FROM users WHERE email = ?";
-    $stmt = $conn->prepare($query);  // prepare the SQL
-
-
+    $stmt = $conn->prepare($query);
+    
     if ($stmt) {
-        $stmt->bind_param("s", $email); // "s" = string type
+        $stmt->bind_param("s", $email);
         $stmt->execute();
-
-
-        $result = $stmt->get_result(); // get result from query
-        $user = $result->fetch_assoc(); // fetch as associative array
-
-
-        echo "User Data from Database:<br>";
-        print_r($user);
-
-
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
        
         if ($user && $password === $user['password']) { 
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-
-
+            $_SESSION['level'] = (int)$user['level']; // Force integer type
             
-            if ($user['role'] === 'admin') {
+           
+            if ((int)$user['level'] === 1) {
                 header("Location: ../admin/index.php");
             } else {
                 header("Location: ../users/menu.php");
@@ -56,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -95,4 +76,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <script src="../assets/script.js"></script>
 </body>
-</html>
+</html

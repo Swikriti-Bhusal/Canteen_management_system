@@ -10,7 +10,7 @@ CREATE TABLE `users` (
     `phone` VARCHAR(20) NOT NULL,             -- Not unique (shared numbers allowed)
     `address` TEXT NOT NULL,                  -- Default delivery address
     `password` VARCHAR(255) NOT NULL,
-    `role` ENUM('admin', 'customer') DEFAULT 'customer',
+    `level` ENUM('1', '2') DEFAULT '2' COMMENT '1=admin, 2=user',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

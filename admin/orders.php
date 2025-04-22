@@ -59,66 +59,116 @@ while ($row = mysqli_fetch_assoc($count_result)) {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
- .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #2c3e50;
-            color: white;
-        }
+    /* Basic reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
+    /* Full page layout */
+    body {
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        background: #f5f5f5;
+    }
 
-.admin-header ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+    /* Header styling */
+    .admin-header {
+        background: #2c3e50;
+        padding: 0 20px;
+    }
 
-.admin-header li {
-    margin-right: 1.5rem;
-    position: relative;
-}
+    .admin-header ul {
+        display: flex;
+        list-style: none;
+        height: 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: center;
+    }
 
-.admin-header a {
-    color: #ecf0f1;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-}
+    .admin-header li {
+        margin-right: 20px;
+    }
 
-        body { 
-            font-family: Arial, sans-serif; 
-              margin: 20px;
-         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        form { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; }
-        input, textarea, select { margin-bottom: 10px; width: 100%; padding: 8px; }
-        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        button.delete { background: #f44336; }
-        .image-preview { max-width: 100px; max-height: 100px; margin-top: 10px; }
-        .current-image { max-width: 100px; max-height: 100px; }
-        .error { color: red; font-size: 12px; margin-top: -8px; margin-bottom: 10px; display: none; }
-        .error.show { display: block; }
-    </style>
+    .admin-header a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+    }
+
+    /* Page title area */
+    .mb-6 {
+        padding: 20px 0;
+        text-align: center;
+        background: white;
+    }
+
+    /* Main content container */
+    .content {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* Orders table container */
+    .orders-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Table styling */
+    .orders-table {
+        flex: 1;
+        overflow: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    th {
+        background: #f9f9f9;
+        position: sticky;
+        top: 0;
+    }
+
+    tr:hover {
+        background: #f5f5f5;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .status-pending { background: #FFF3CD; color: #856404; }
+    .status-processing { background: #CCE5FF; color: #004085; }
+    .status-completed { background: #D4EDDA; color: #155724; }
+    .status-cancelled { background: #F8D7DA; color: #721C24; }
+</style>
 </head>
 <body class="bg-gray-100">
     <header class="admin-header">

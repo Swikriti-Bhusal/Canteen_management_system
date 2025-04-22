@@ -229,7 +229,7 @@ footer .social-icons a:hover {
                 <p>Order your favorite meals online, pay with ease, and enjoy delicious food without the wait.</p>
                 <div class="hero-buttons">
                     <a href="../cms/auth/login.php" class="btn btn-primary">Order Now <i class="fas fa-arrow-right"></i></a>
-                    <a href="../cms/users/aboutus.php" class="btn btn-outline">Learn More</a>
+                    <a href="../cms/aboutus.php" class="btn btn-outline">Learn More</a>
                 </div>
             </div>
             <div class="hero-image">

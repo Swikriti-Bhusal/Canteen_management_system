@@ -243,6 +243,7 @@ nav ul li a:hover, nav ul li a.active {
                     <li><a href="../users/menu.php">Menu</a></li>
                     <li><a href="../users/aboutus.php">About</a></li>
                     <li><a href="contactus.php">Contact</a></li>
+                    <li><a href="../users/cart.php">Cart</a></li>
                     <div class="user-profile" style="margin-left: 1.5rem; display: flex; align-items: center;">
             <a href="#" style="display: flex; align-items: center; color: var(--secondary-color);">
                 <i class="fas fa-user-circle" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>

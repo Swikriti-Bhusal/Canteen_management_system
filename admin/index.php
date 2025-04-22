@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['level'] != 1) {
     header("Location: ../admin/login.php");
     exit();
 }
@@ -26,7 +26,7 @@ if ($result) {
 }
 
 // 2. Get total users count
-$result = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE role = 'user'");
+$result = mysqli_query($conn, "SELECT COUNT(*) FROM users WHERE level = 2 ");
 if ($result) {
     $row = mysqli_fetch_row($result);
     $users = $row[0];
@@ -164,10 +164,17 @@ if ($result) {
                             <span class="nav-text">Dashboard</span>
                         </a>
                     </li>
+                    
                     <li class="mb-2">
                         <a href="orders.php" class="flex items-center p-2 rounded hover:bg-blue-700">
                             <i class="fas fa-shopping-cart mr-3"></i>
                             <span class="nav-text">Orders</span>
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                    <a href="pending_orders.php" class="flex items-center p-2 rounded hover:bg-blue-700">  
+                    <i class="fas fa-clock text-xl"></i>
+                    <span class="nav-text"> Pending Orders</span>
                         </a>
                     </li>
                     <li class="mb-2">
@@ -188,6 +195,7 @@ if ($result) {
                             <span class="nav-text">Reports</span>
                         </a>
                     </li>
+
                     <li class="mb-2">
                         <a href="../auth/logout.php" class="flex items-center p-2 rounded hover:bg-blue-700">
                             <i class="fas fa-sign-out-alt mr-3"></i>
@@ -200,7 +208,7 @@ if ($result) {
 
         <div class="content flex-grow ml-64 p-8 content">
             <div class="mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
+                <h1   style="text-align: center;" class="text-3xl font-bold text-gray-800">Dashboard Overview</h1>
                 <p class="text-gray-600">Welcome back, <?= htmlspecialchars($_SESSION['username']) ?>!</p>
             </div>
 
@@ -215,8 +223,21 @@ if ($result) {
                             <p class="text-gray-500">Total Orders</p>
                             <h3 class="text-2xl font-bold"><?= number_format($orders) ?></h3>
                         </div>
+                        
                     </div>
+                    
                 </div>
+                <div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center">
+        <div class="p-3 rounded-full bg-orange-100 text-orange-600 mr-4">
+            <i class="fas fa-clock text-xl"></i>
+        </div>
+        <div>
+            <p class="text-gray-500">Pending Orders</p>
+            <h3 class="text-2xl font-bold"><?= number_format($pendingOrders) ?></h3>
+        </div>
+    </div>
+</div>
                 
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
@@ -296,16 +317,6 @@ if ($result) {
                         <a href="orders.php" class="text-blue-600 hover:underline">View All Orders</a>
                     </div>
                 </div>
-
-               
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script>
         
