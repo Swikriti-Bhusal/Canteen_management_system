@@ -22,7 +22,6 @@ CREATE TABLE `food_items` (
     `image` VARCHAR(255),
     `category` VARCHAR(50),
     `is_available` BOOLEAN DEFAULT TRUE,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -52,9 +51,9 @@ CREATE TABLE `orders` (
 CREATE TABLE `order_items` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `order_id` INT NOT NULL,
-    `food_id` INT NOT NULL,
+    `food_id` INT NOT NULL, 
     `quantity` INT NOT NULL,
-    `price_at_order` DECIMAL(10,2) NOT NULL, 
+    `price` DECIMAL(10,2) NOT NULL, 
     FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`),
     FOREIGN KEY (`food_id`) REFERENCES `food_items`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

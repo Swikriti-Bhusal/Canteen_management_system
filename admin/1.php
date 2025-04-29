@@ -38,9 +38,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 $status_counts = [
     'all' => 0,
     'pending' => 0,
-    'processing' => 0,
-    'completed' => 0,
-    'cancelled' => 0
+    'completed' => 0
 ];
 
 $count_result = mysqli_query($conn, "SELECT status, COUNT(*) as count FROM orders GROUP BY status");
@@ -59,85 +57,143 @@ while ($row = mysqli_fetch_assoc($count_result)) {
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
- .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background-color: #2c3e50;
-            color: white;
-        }
+    /* Basic reset */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
+    /* Full page layout */
+    body {
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        background: #f5f5f5;
+    }
 
-.admin-header ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+    /* Header styling */
+    .admin-header {
+        background: #2c3e50;
+        padding: 0 20px;
+    }
 
-.admin-header li {
-    margin-right: 1.5rem;
-    position: relative;
-}
+    .admin-header ul {
+        display: flex;
+        list-style: none;
+        height: 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: center;
+    }
 
-.admin-header a {
-    color: #ecf0f1;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-}
+    .admin-header li {
+        margin-right: 20px;
+    }
 
-        body { 
-            font-family: Arial, sans-serif; 
-              margin: 20px;
-         }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px; 
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        form { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; }
-        input, textarea, select { margin-bottom: 10px; width: 100%; padding: 8px; }
-        button { padding: 8px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
-        button.delete { background: #f44336; }
-        .image-preview { max-width: 100px; max-height: 100px; margin-top: 10px; }
-        .current-image { max-width: 100px; max-height: 100px; }
-        .error { color: red; font-size: 12px; margin-top: -8px; margin-bottom: 10px; display: none; }
-        .error.show { display: block; }
-    </style>
+    .admin-header a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        display: block;
+    }
+
+    /* Page title area */
+    .mb-6 {
+        padding: 20px 0;
+        text-align: center;
+        background: white;
+    }
+
+    /* Main content container */
+    .content {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* Orders table container */
+    .orders-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Table styling */
+    .orders-table {
+        flex: 1;
+        overflow: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    th {
+        background: #f9f9f9;
+        position: sticky;
+        top: 0;
+    }
+
+    tr:hover {
+        background: #f5f5f5;
+    }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .status-pending { background: #FFF3CD; color: #856404; }
+    .status-completed { background: #D4EDDA; color: #155724; }
+    
+    /* Action buttons */
+    .action-btn {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    .complete-btn { background: #D4EDDA; color: #155724; }
+    .complete-btn:hover { background: #C3E6CB; }
+</style>
 </head>
 <body class="bg-gray-100">
     <header class="admin-header">
     <ul>
-                    <li><a href="index.php" class="active">Dashboard</a></li>
-                    <li><a href="orders.php">Orders</a></li>
-                    <li><a href="manage_menu.php">Menu</a></li>
-                    <li><a href="manage_users.php">Users</a></li>
-                    <li><a href="../auth/logout.php">Logout</a></li>
-                </ul>
+        <li><a href="index.php" class="active">Dashboard</a></li>
+        <li><a href="orders.php">Orders</a></li>
+        <li><a href="manage_menu.php">Menu</a></li>
+        <li><a href="manage_users.php">Users</a></li>
+        <li><a href="../auth/logout.php">Logout</a></li>
+    </ul>
     </header>
 
-    
     <div class="flex h-screen">
         <!-- Main Content -->
         <div class="content flex-grow ml-64 p-8">
             <div class="mb-6">
                 <h1 style="text-align: center;" class="text-3xl font-bold text-gray-800">Manage Orders</h1>
-                <p  style="text-align: center;"class="text-gray-600">View and manage all customer orders</p>
+                <p style="text-align: center;" class="text-gray-600">View and manage all customer orders</p>
             </div>
 
             <!-- Filters and Search -->
@@ -152,17 +208,9 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                            class="<?= $status_filter == 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                             Pending (<?= $status_counts['pending'] ?>)
                         </a>
-                        <a href="?status=processing" 
-                           class="<?= $status_filter == 'processing' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Processing (<?= $status_counts['processing'] ?>)
-                        </a>
                         <a href="?status=completed" 
                            class="<?= $status_filter == 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                             Completed (<?= $status_counts['completed'] ?>)
-                        </a>
-                        <a href="?status=cancelled" 
-                           class="<?= $status_filter == 'cancelled' ? 'bg-red-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Cancelled (<?= $status_counts['cancelled'] ?>)
                         </a>
                     </div>
                     
@@ -193,7 +241,6 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
@@ -216,26 +263,15 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                                     Rs<?= number_format($order['total_amount'], 2) ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="status-badge status-<?= $order['status'] ?>">
-                                        <?= ucfirst($order['status']) ?>
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex gap-2">
-                                        <a href="order_details.php?id=<?= $order['id'] ?>" 
-                                           class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="edit_order.php?id=<?= $order['id'] ?>" 
-                                           class="text-yellow-600 hover:text-yellow-800">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="?delete=<?= $order['id'] ?>" 
-                                           onclick="return confirm('Are you sure you want to delete this order?')"
-                                           class="text-red-600 hover:text-red-800">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </div>
+                                    <?php if ($order['status'] == 'pending'): ?>
+                                        <form method="post" action="update_order_status.php" style="display: inline;">
+                                            <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                            <input type="hidden" name="status" value="completed">
+                                            <button type="submit" class="complete-btn action-btn">
+                                                <i class="fas fa-check"></i> Mark Complete
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

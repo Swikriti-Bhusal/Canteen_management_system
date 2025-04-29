@@ -14,14 +14,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     
     // Validate inputs
-if (empty($username)) {
-    $errors['username'] = "Username is required";
-} elseif (strlen($username) < 4) {
-    $errors['username'] = "Username must be at least 4 characters";
-} elseif (!preg_match('/^[A-Za-z]+$/', $username)) {
-    $errors['username'] = "Username can only contain letters (no numbers/symbols)";
-}
 
+if (empty($username)) {
+    $errors['username'] = "Full Name is required";
+} elseif (strlen($username) < 4) {
+    $errors['username'] = "Full Name must be at least 4 characters";
+} elseif (!preg_match('/^[A-Za-z\s]+$/', $username)) {
+    $errors['username'] = "Full Name can only contain letters and spaces (no numbers/symbols)";
+}
 if (empty($email)) {
     $errors['email'] = "Email is required";
 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -78,7 +78,7 @@ if (empty($password)) {
         
         if ($stmt->execute()) {
             $_SESSION['signup_success'] = "Registration successful! ";
-            header("Location: ../users/menu.php");
+            header("Location: ../auth/login.php");
             exit();
         } else {
             $errors['general'] = "Registration failed: " . $conn->error;
@@ -174,7 +174,7 @@ if (empty($password)) {
     
     <form method="POST" action="">
         <div class="form-row">
-            <label for="username">Username:</label>
+            <label for="username">Full Name:</label>
             <input type="text" name="username" id="username" 
                    value="<?php echo htmlspecialchars($username); ?>" required>
             <?php if (!empty($errors['username'])): ?>

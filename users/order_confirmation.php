@@ -28,7 +28,7 @@ if (!$order) {
 // Fetch order items - CORRECTED JOIN CONDITION
 $items_sql = "SELECT oi.*, fi.name 
               FROM order_items oi
-              JOIN food_items fi ON oi.food_item_id = fi.id
+              JOIN food_items fi ON oi.food_id = fi.id
               WHERE oi.order_id = ?";
 $items_stmt = mysqli_prepare($conn, $items_sql);
 mysqli_stmt_bind_param($items_stmt, "i", $order_id);

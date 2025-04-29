@@ -38,9 +38,8 @@ while ($row = mysqli_fetch_assoc($result)) {
 $status_counts = [
     'all' => 0,
     'pending' => 0,
-    'processing' => 0,
     'completed' => 0,
-    'cancelled' => 0
+    'delivered' => 0
 ];
 
 $count_result = mysqli_query($conn, "SELECT status, COUNT(*) as count FROM orders GROUP BY status");
@@ -165,29 +164,59 @@ while ($row = mysqli_fetch_assoc($count_result)) {
     }
 
     .status-pending { background: #FFF3CD; color: #856404; }
-    .status-processing { background: #CCE5FF; color: #004085; }
     .status-completed { background: #D4EDDA; color: #155724; }
-    .status-cancelled { background: #F8D7DA; color: #721C24; }
+    .status-delivered { background: #CCE5FF; color: #004085; }
+    
+    /* Action buttons */
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        margin-right: 5px;
+        border: none;
+        transition: background-color 0.3s;
+    }
+    .pending-btn { 
+        background: #FFC107; 
+        color: #000; 
+    }
+    .pending-btn:hover { 
+        background: #E0A800; 
+    }
+    .complete-btn { 
+        background: #28A745; 
+        color: white; 
+    }
+    .complete-btn:hover { 
+        background: #218838; 
+    }
+    .deliver-btn { 
+        background: #17A2B8; 
+        color: white; 
+    }
+    .deliver-btn:hover { 
+        background: #138496; 
+    }
 </style>
 </head>
 <body class="bg-gray-100">
     <header class="admin-header">
     <ul>
-                    <li><a href="index.php" class="active">Dashboard</a></li>
-                    <li><a href="orders.php">Orders</a></li>
-                    <li><a href="manage_menu.php">Menu</a></li>
-                    <li><a href="manage_users.php">Users</a></li>
-                    <li><a href="../auth/logout.php">Logout</a></li>
-                </ul>
+        <li><a href="index.php" class="active">Dashboard</a></li>
+        <li><a href="orders.php">Orders</a></li>
+        <li><a href="manage_menu.php">Menu</a></li>
+        <li><a href="manage_users.php">Users</a></li>
+        <li><a href="../auth/logout.php">Logout</a></li>
+    </ul>
     </header>
 
-    
     <div class="flex h-screen">
         <!-- Main Content -->
         <div class="content flex-grow ml-64 p-8">
             <div class="mb-6">
                 <h1 style="text-align: center;" class="text-3xl font-bold text-gray-800">Manage Orders</h1>
-                <p  style="text-align: center;"class="text-gray-600">View and manage all customer orders</p>
+                <p style="text-align: center;" class="text-gray-600">View and manage all customer orders</p>
             </div>
 
             <!-- Filters and Search -->
@@ -202,17 +231,13 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                            class="<?= $status_filter == 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                             Pending (<?= $status_counts['pending'] ?>)
                         </a>
-                        <a href="?status=processing" 
-                           class="<?= $status_filter == 'processing' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Processing (<?= $status_counts['processing'] ?>)
-                        </a>
                         <a href="?status=completed" 
                            class="<?= $status_filter == 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                             Completed (<?= $status_counts['completed'] ?>)
                         </a>
-                        <a href="?status=cancelled" 
-                           class="<?= $status_filter == 'cancelled' ? 'bg-red-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Cancelled (<?= $status_counts['cancelled'] ?>)
+                        <a href="?status=delivered" 
+                           class="<?= $status_filter == 'delivered' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
+                            Delivered (<?= $status_counts['delivered'] ?>)
                         </a>
                     </div>
                     
@@ -242,8 +267,8 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
@@ -263,28 +288,44 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                                     <?= date('M d, Y h:i A', strtotime($order['created_at'])) ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    Rs<?= number_format($order['total_amount'], 2) ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="status-badge status-<?= $order['status'] ?>">
                                         <?= ucfirst($order['status']) ?>
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    Rs<?= number_format($order['total_amount'], 2) ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex gap-2">
-                                        <a href="order_details.php?id=<?= $order['id'] ?>" 
-                                           class="text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="edit_order.php?id=<?= $order['id'] ?>" 
-                                           class="text-yellow-600 hover:text-yellow-800">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="?delete=<?= $order['id'] ?>" 
-                                           onclick="return confirm('Are you sure you want to delete this order?')"
-                                           class="text-red-600 hover:text-red-800">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <?php if ($order['status'] != 'pending'): ?>
+                                            <form method="post" action="update_order_status.php" style="display: inline;">
+                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                <input type="hidden" name="status" value="pending">
+                                                <button type="submit" class="action-btn pending-btn">
+                                                    <i class="fas fa-clock"></i> Pending
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($order['status'] != 'completed'): ?>
+                                            <form method="post" action="update_order_status.php" style="display: inline;">
+                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                <input type="hidden" name="status" value="completed">
+                                                <button type="submit" class="action-btn complete-btn">
+                                                    <i class="fas fa-check"></i> Complete
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($order['status'] != 'delivered'): ?>
+                                            <form method="post" action="update_order_status.php" style="display: inline;">
+                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                                <input type="hidden" name="status" value="delivered">
+                                                <button type="submit" class="action-btn deliver-btn">
+                                                    <i class="fas fa-truck"></i> Deliver
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

@@ -49,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cart_id'], $_POST['ac
         exit();
     }
 
-    // Calculate new quantity (with limits 1-10)
+    // Calculate new quantity (with limits 1-50)
     $newQuantity = $cartItem['quantity'];
     
-    if ($action === 'increase' && $newQuantity < 10) {
+    if ($action === 'increase' && $newQuantity < 50) {
         $newQuantity++;
     } elseif ($action === 'decrease' && $newQuantity > 1) {
         $newQuantity--;

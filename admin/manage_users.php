@@ -195,9 +195,6 @@ $users = mysqli_query($conn, $query);
                             </td>
                             <td><?= date('M d, Y h:i A', strtotime($user['created_at'])) ?></td>
                             <td>
-                                <a href="edit_user.php?id=<?= $user['id'] ?>" class="text-blue-500 hover:text-blue-700 mr-3">
-                                    <i class="fas fa-edit"></i>
-                                </a>
                                 <a href="?delete=<?= $user['id'] ?>" onclick="return confirm('Are you sure you want to delete this user?')" class="text-red-500 hover:text-red-700">
                                     <i class="fas fa-trash"></i>
                                 </a>

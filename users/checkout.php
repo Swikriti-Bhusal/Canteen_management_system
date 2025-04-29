@@ -26,14 +26,24 @@ foreach ($cartItems as $item) {
 }
 
 // Handle checkout
+// Handle checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Create simple order record
+    // Create order record
     $order_sql = "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'completed')";
     $order_stmt = mysqli_prepare($conn, $order_sql);
     mysqli_stmt_bind_param($order_stmt, "id", $_SESSION['user_id'], $total);
     mysqli_stmt_execute($order_stmt);
     $order_id = mysqli_insert_id($conn);
     mysqli_stmt_close($order_stmt);
+    
+    // Save each cart item to order_items
+    foreach ($cartItems as $item) {
+        $item_sql = "INSERT INTO order_items (order_id, food_id, quantity, price) VALUES (?, ?, ?, ?)";
+        $item_stmt = mysqli_prepare($conn, $item_sql);
+        mysqli_stmt_bind_param($item_stmt, "iiid", $order_id, $item['food_id'], $item['quantity'], $item['price']);
+        mysqli_stmt_execute($item_stmt);
+        mysqli_stmt_close($item_stmt);
+    }
     
     // Clear cart
     $clear_cart_sql = "DELETE FROM cart WHERE user_id = ?";

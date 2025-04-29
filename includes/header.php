@@ -244,6 +244,8 @@ nav ul li a:hover, nav ul li a.active {
                     <li><a href="../users/aboutus.php">About</a></li>
                     <li><a href="contactus.php">Contact</a></li>
                     <li><a href="../users/cart.php">Cart</a></li>
+                    <li><a href="../users/orders.php">Orders</a></li>
+
                     <div class="user-profile" style="margin-left: 1.5rem; display: flex; align-items: center;">
             <a href="#" style="display: flex; align-items: center; color: var(--secondary-color);">
                 <i class="fas fa-user-circle" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>
@@ -255,12 +257,6 @@ nav ul li a:hover, nav ul li a.active {
         </div>  
                 </ul>
             </nav>
-            
-            <div class="header-icons">
-                <a href="../users/cart.php" class="cart-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span id="cart-count">0</span>
-                </a>
                 <a href="../auth/login.php" class="user-icon">
                     <i class="fas fa-user"></i>
                 </a>
