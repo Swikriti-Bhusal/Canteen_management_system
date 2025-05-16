@@ -2,13 +2,13 @@
 session_start();
 require '../config.php';
 
-// Get category filter
+// Get category filter (existing)
 $category = isset($_GET['category']) ? $_GET['category'] : 'All';
 
-// Get search query
+// Get search query (new)
 $searchQuery = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-// Fetch all food items
+// Fetch all food items (existing)
 if ($category === 'All') {
     $result = $conn->query("SELECT * FROM food_items");
 } else {
@@ -19,34 +19,20 @@ if ($category === 'All') {
 }
 $foodItems = $result->fetch_all(MYSQLI_ASSOC);
 
-// ===== 1. LINEAR SEARCH FUNCTION ===== //
+// Linear Search Function (new)
 function searchFoodItems($items, $query) {
     $results = [];
     foreach ($items as $item) {
-        if (stripos($item['name'], $query) !== false) {
+        if (stripos($item['name'], $query) !== false) { // Case-insensitive partial match
             $results[] = $item;
         }
     }
     return $results;
 }
 
-// ===== 2. RECOMMENDATION FUNCTION ===== //
-function getRecommendedItems($user_id, $conn) {
-    $query = "SELECT fi.* FROM food_items fi
-              JOIN order_items oi ON fi.id = oi.food_id
-              JOIN orders o ON oi.order_id = o.id
-              WHERE o.user_id = $user_id
-              ORDER BY o.created_at DESC LIMIT 3";
-    return mysqli_query($conn, $query)->fetch_all(MYSQLI_ASSOC);
-}
-
-// Apply search if query exists
+// Apply search if query exists (new)
 if (!empty($searchQuery)) {
     $foodItems = searchFoodItems($foodItems, $searchQuery);
-    $showRecommendations = false; // Hide recommendations when searching
-} else {
-    $showRecommendations = isset($_SESSION['user_id']);
-    $recommendations = $showRecommendations ? getRecommendedItems($_SESSION['user_id'], $conn) : [];
 }
 ?>
 <!DOCTYPE html>
@@ -54,9 +40,9 @@ if (!empty($searchQuery)) {
 <head>
     <?php include '../includes/header.php'; ?>
     <title>Our Menu</title>
-    <link rel="stylesheet" href="./cms/style.css">
+ <link rel="stylesheet" href="./cms/style.css">
     <style>
-         body {
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -189,48 +175,36 @@ if (!empty($searchQuery)) {
                 grid-template-columns: 1fr;
             }
         }
-        .recommendations-section {
-            margin: 30px 0;
-            padding: 20px 0;
-            border-top: 2px solid #ff6b00;
-        }
-        .recommendations-section h3 {
-            color: #ff6b00;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-        }
+                
     </style>
-</head>
+   </head>
 <body>
+
     <div class="container">
         <div class="header">
             <h1>Our Delicious Menu</h1>
             <p>Fresh ingredients, authentic flavors, made with love</p>
         </div>
 
-        <!-- Search Bar -->
+        <!--  Search Bar  -->
         <form method="GET" action="" class="search-form" style="margin-bottom: 20px; text-align: center;">
-            <input type="hidden" name="category" value="<?= htmlspecialchars($category) ?>">
             <input type="text" name="search" placeholder="Search for food..." 
                    value="<?= htmlspecialchars($searchQuery) ?>" style="padding: 10px; width: 300px;">
             <button type="submit" style="padding: 10px 15px; background: #ff6b00; color: white; border: none; border-radius: 4px;">Search</button>
             <a href="?category=<?= $category ?>" style="padding: 10px 15px; margin-left: 5px; background: #ddd; color: black; text-decoration: none; border-radius: 4px;">Clear</a>
         </form>
 
+        <!-- Rest  HTML/PHP (tabs, menu grid, etc.) -->
         <?php if (isset($cart_message)): ?>
             <div class="cart-message"><?= htmlspecialchars($cart_message) ?></div>
         <?php endif; ?>
 
-       
-
-        <!-- Category Tabs -->
         <div class="tabs">
             <a href="?category=All" class="tab <?= $category === 'All' ? 'active' : '' ?>">All Items</a>
             <a href="?category=Main Course" class="tab <?= $category === 'Main Course' ? 'active' : '' ?>">Main Courses</a>
             <a href="?category=Dessert" class="tab <?= $category === 'Dessert' ? 'active' : '' ?>">Desserts</a>
         </div>
 
-        <!-- Main Menu Grid -->
         <div class="menu-grid">
             <?php if (count($foodItems) > 0): ?>
                 <?php foreach ($foodItems as $item): ?>
@@ -240,52 +214,30 @@ if (!empty($searchQuery)) {
                             <h3 class="food-name"><?= htmlspecialchars($item['name']) ?></h3>
                             <p class="food-desc"><?= htmlspecialchars($item['description']) ?></p>
                             <p class="food-price">Rs<?= number_format($item['price'], 0) ?></p>
+                            
                             <form action="../users/add_to_cart.php" method="post">
                                 <input type="hidden" name="food_id" value="<?= $item['id'] ?>">
+                                
                                 <div class="quantity-selector">
                                     <button type="button" class="quantity-btn minus" onclick="updateQuantity(this, -1)">-</button>
                                     <input type="number" name="quantity" class="quantity-input" value="1" min="1" max="10">
                                     <button type="button" class="quantity-btn plus" onclick="updateQuantity(this, 1)">+</button>
                                 </div>
+                                
                                 <button type="submit" class="add-to-cart">Add to Cart</button>
                             </form>
                         </div>
                     </div>
                 <?php endforeach; ?>
-            <?php else: ?>
+             <?php else: ?>
                 <div class="no-items">
                     <p>No items found<?= !empty($searchQuery) ? ' for "' . htmlspecialchars($searchQuery) . '"' : '' ?>.</p>
                 </div>
             <?php endif; ?>
         </div>
-         <!-- Recommendations Section -->
-        <?php if ($showRecommendations && !empty($recommendations)): ?>
-        <div class="recommendations-section">
-<h3 style="text-align: center;">Recommended For You</h3>
-            <div class="menu-grid">
-                <?php foreach ($recommendations as $item): ?>
-                <div class="food-card">
-                    <img src="../uploads/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="food-img">
-                    <div class="food-info">
-                        <h3 class="food-name"><?= htmlspecialchars($item['name']) ?></h3>
-                        <p class="food-desc"><?= htmlspecialchars($item['description']) ?></p>
-                        <p class="food-price">Rs<?= number_format($item['price'], 0) ?></p>
-                        <form action="../users/add_to_cart.php" method="post">
-                            <input type="hidden" name="food_id" value="<?= $item['id'] ?>">
-                            <div class="quantity-selector">
-                                <button type="button" class="quantity-btn minus" onclick="updateQuantity(this, -1)">-</button>
-                                <input type="number" name="quantity" class="quantity-input" value="1" min="1" max="10">
-                                <button type="button" class="quantity-btn plus" onclick="updateQuantity(this, 1)">+</button>
-                            </div>
-                            <button type="submit" class="add-to-cart">Add to Cart</button>
-                        </form>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
     </div>
-    <script src="/cms/assets/script.js"></script>
+    <!--  scripts -->
+              <script src="/cms/assets/script.js"></script>
+
 </body>
 </html>

@@ -171,12 +171,7 @@ if ($result) {
                             <span class="nav-text">Orders</span>
                         </a>
                     </li>
-                    <li class="mb-2">
-                    <a href="pending_orders.php" class="flex items-center p-2 rounded hover:bg-blue-700">  
-                    <i class="fas fa-clock text-xl"></i>
-                    <span class="nav-text"> Pending Orders</span>
-                        </a>
-                    </li>
+
                     <li class="mb-2">
                         <a href="../admin/manage_menu.php" class="flex items-center p-2 rounded hover:bg-blue-700">
                             <i class="fas fa-utensils mr-3"></i>
@@ -189,13 +184,6 @@ if ($result) {
                             <span class="nav-text">Users</span>
                         </a>
                     </li>
-                    <li class="mb-2">
-                        <a href="reports.php" class="flex items-center p-2 rounded hover:bg-blue-700">
-                            <i class="fas fa-chart-bar mr-3"></i>
-                            <span class="nav-text">Reports</span>
-                        </a>
-                    </li>
-
                     <li class="mb-2">
                         <a href="../auth/logout.php" class="flex items-center p-2 rounded hover:bg-blue-700">
                             <i class="fas fa-sign-out-alt mr-3"></i>
@@ -225,20 +213,7 @@ if ($result) {
                         </div>
                         
                     </div>
-                    
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-    <div class="flex items-center">
-        <div class="p-3 rounded-full bg-orange-100 text-orange-600 mr-4">
-            <i class="fas fa-clock text-xl"></i>
-        </div>
-        <div>
-            <p class="text-gray-500">Pending Orders</p>
-            <h3 class="text-2xl font-bold"><?= number_format($pendingOrders) ?></h3>
-        </div>
-    </div>
-</div>
-                
+                </div>   
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-indigo-100 text-indigo-600 mr-4">

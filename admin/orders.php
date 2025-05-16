@@ -10,7 +10,6 @@ require('../config.php');
 
 // Get all orders with user details and optional status filter
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
-$search_query = isset($_GET['search']) ? $_GET['search'] : '';
 
 $query = "SELECT o.*, u.username, u.email 
           FROM orders o
@@ -18,12 +17,6 @@ $query = "SELECT o.*, u.username, u.email
 
 if ($status_filter != 'all') {
     $query .= " WHERE o.status = '" . mysqli_real_escape_string($conn, $status_filter) . "'";
-}
-
-if (!empty($search_query)) {
-    $query .= ($status_filter != 'all' ? " AND" : " WHERE") . 
-              " (o.id LIKE '%" . mysqli_real_escape_string($conn, $search_query) . "%' OR 
-                 u.username LIKE '%" . mysqli_real_escape_string($conn, $search_query) . "%')";
 }
 
 $query .= " ORDER BY o.created_at DESC";
@@ -219,42 +212,25 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                 <p style="text-align: center;" class="text-gray-600">View and manage all customer orders</p>
             </div>
 
-            <!-- Filters and Search -->
+            <!-- Filters -->
             <div class="bg-white rounded-lg shadow p-4 mb-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div class="flex flex-wrap gap-2">
-                        <a href="?status=all" 
-                           class="<?= $status_filter == 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            All (<?= $status_counts['all'] ?>)
-                        </a>
-                        <a href="?status=pending" 
-                           class="<?= $status_filter == 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Pending (<?= $status_counts['pending'] ?>)
-                        </a>
-                        <a href="?status=completed" 
-                           class="<?= $status_filter == 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Completed (<?= $status_counts['completed'] ?>)
-                        </a>
-                        <a href="?status=delivered" 
-                           class="<?= $status_filter == 'delivered' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                            Delivered (<?= $status_counts['delivered'] ?>)
-                        </a>
-                    </div>
-                    
-                    <form method="get" class="flex gap-2">
-                        <input type="hidden" name="status" value="<?= htmlspecialchars($status_filter) ?>">
-                        <input type="text" name="search" placeholder="Search orders..." 
-                               value="<?= htmlspecialchars($search_query) ?>"
-                               class="border rounded px-3 py-1 w-full md:w-64">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        <?php if (!empty($search_query)): ?>
-                            <a href="?status=<?= htmlspecialchars($status_filter) ?>" class="bg-gray-200 px-3 py-1 rounded flex items-center">
-                                Clear
-                            </a>
-                        <?php endif; ?>
-                    </form>
+                <div class="flex flex-wrap gap-2">
+                    <a href="?status=all" 
+                       class="<?= $status_filter == 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
+                        All (<?= $status_counts['all'] ?>)
+                    </a>
+                    <a href="?status=pending" 
+                       class="<?= $status_filter == 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
+                        Pending (<?= $status_counts['pending'] ?>)
+                    </a>
+                    <a href="?status=completed" 
+                       class="<?= $status_filter == 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
+                        Completed (<?= $status_counts['completed'] ?>)
+                    </a>
+                    <a href="?status=delivered" 
+                       class="<?= $status_filter == 'delivered' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
+                        Delivered (<?= $status_counts['delivered'] ?>)
+                    </a>
                 </div>
             </div>
 
@@ -338,7 +314,7 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                     <div class="p-8 text-center text-gray-500">
                         <i class="fas fa-shopping-cart fa-3x mb-4"></i>
                         <p class="text-xl">No orders found</p>
-                        <?php if (!empty($search_query) || $status_filter != 'all'): ?>
+                        <?php if ($status_filter != 'all'): ?>
                             <p class="mt-2">
                                 <a href="orders.php" class="text-blue-600 hover:underline">
                                     Clear filters

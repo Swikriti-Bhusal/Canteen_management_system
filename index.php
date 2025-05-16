@@ -193,6 +193,42 @@ footer .social-icons a:hover {
 }
     </style>
 </head>
+<script>
+    function searchFood() {
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        const foodItems = document.querySelectorAll('.item');
+        let found = false;
+
+        foodItems.forEach(item => {
+            const foodName = item.querySelector('h3').textContent.toLowerCase();
+            if (foodName.includes(searchQuery)) {
+                item.style.display = 'block'; // Show matching items
+                found = true;
+            } else {
+                item.style.display = 'none'; // Hide others
+            }
+        });
+
+        // Show message if no results
+        if (!found && searchQuery) {
+            alert(`No items found for "${searchQuery}"`);
+        }
+    }
+
+    //  Search on pressing Enter key
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchFood();
+        }
+    });
+
+        function resetSearch() {
+        document.getElementById('searchInput').value = '';
+        document.querySelectorAll('.item').forEach(item => {
+            item.style.display = 'block'; // Show all items
+        });
+    }
+</script>
 <body>
     <header>
         <div class="container">
@@ -236,8 +272,22 @@ footer .social-icons a:hover {
             <img src="..\cms\uploads\main\biryani.jpg" alt="Delicious food">
             </div>
         </div>
+
         <section id="menu" class="menu">
             <h2>Available Items</h2>
+<div style="text-align: center; margin: 20px 0;">
+    <input type="text" id="searchInput" placeholder="Search food items..." 
+           style="padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ddd;">
+    <button onclick="searchFood()" 
+            style="padding: 10px 15px; background: #ff6b00; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Search
+    </button>
+    <button onclick="resetSearch()" 
+        style="padding: 10px 15px; background: #ddd; color: black; border: none; border-radius: 5px; cursor: pointer;">
+    Reset
+</button>
+
+</div>
             <div class="food-items">
         
                 <div class="item"><img src="..\cms\uploads\main\veg momo.jpg" ><h3>Veg Momo</h3><p>Rs. 130</p></div>
