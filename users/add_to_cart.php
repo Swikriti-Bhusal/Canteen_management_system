@@ -16,6 +16,34 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// ===== NEW: CHECK IF THIS IS A PAYMENT REQUEST ===== //
+if (isset($_POST['checkout'])) {
+    // Create order in database
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("INSERT INTO orders (user_id, status) VALUES (?, 'pending')");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $order_id = $stmt->insert_id;
+    
+    // Move cart items to order_items
+    $cart_items = $conn->query("SELECT * FROM cart WHERE user_id = $user_id");
+    while ($item = $cart_items->fetch_assoc()) {
+        $insert = $conn->prepare("INSERT INTO order_items (order_id, food_id, quantity) VALUES (?, ?, ?)");
+        $insert->bind_param("iii", $order_id, $item['food_id'], $item['quantity']);
+        $insert->execute();
+    }
+    
+    // Clear cart
+    $conn->query("DELETE FROM cart WHERE user_id = $user_id");
+    
+    // Store order ID for payment processing
+    $_SESSION['current_order_id'] = $order_id;
+    
+    // Redirect to Khalti payment
+    header("Location: ../payment/khalti.php");
+    exit();
+}
+
 // Process only POST requests with food_id
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['food_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -60,4 +88,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['food_id'])) {
     header("Location: ../users/menu.php");
     exit();
 }
-?>

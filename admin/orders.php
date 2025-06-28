@@ -223,10 +223,6 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                        class="<?= $status_filter == 'pending' ? 'bg-yellow-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                         Pending (<?= $status_counts['pending'] ?>)
                     </a>
-                    <a href="?status=completed" 
-                       class="<?= $status_filter == 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
-                        Completed (<?= $status_counts['completed'] ?>)
-                    </a>
                     <a href="?status=delivered" 
                        class="<?= $status_filter == 'delivered' ? 'bg-blue-500 text-white' : 'bg-gray-200' ?> px-3 py-1 rounded-full text-sm">
                         Delivered (<?= $status_counts['delivered'] ?>)
@@ -283,15 +279,7 @@ while ($row = mysqli_fetch_assoc($count_result)) {
                                             </form>
                                         <?php endif; ?>
                                         
-                                        <?php if ($order['status'] != 'completed'): ?>
-                                            <form method="post" action="update_order_status.php" style="display: inline;">
-                                                <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                                <input type="hidden" name="status" value="completed">
-                                                <button type="submit" class="action-btn complete-btn">
-                                                    <i class="fas fa-check"></i> Complete
-                                                </button>
-                                            </form>
-                                        <?php endif; ?>
+                                       
                                         
                                         <?php if ($order['status'] != 'delivered'): ?>
                                             <form method="post" action="update_order_status.php" style="display: inline;">

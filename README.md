@@ -21,7 +21,6 @@ CREATE TABLE `food_items` (
     `price` DECIMAL(10,2) NOT NULL,
     `image` VARCHAR(255),
     `category` VARCHAR(50),
-    `is_available` BOOLEAN DEFAULT TRUE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -42,18 +41,50 @@ CREATE TABLE `orders` (
     `user_id` INT NOT NULL,
     `total_amount` DECIMAL(10,2) NOT NULL,
     `status` ENUM('pending','preparing','ready','delivered','cancelled') DEFAULT 'pending',
+    `payment_status` ENUM('unpaid', 'paid', 'failed') DEFAULT 'unpaid',
+    `payment_method` VARCHAR(20) DEFAULT NULL,
+    `payment_id` VARCHAR(100) DEFAULT NULL COMMENT 'Khalti transaction ID',
+    `payment_date` TIMESTAMP NULL DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+ALTER TABLE orders
+ADD COLUMN order_reference VARCHAR(100) NOT NULL AFTER user_id;
 
--- 5. ORDER_ITEMS TABLE (what was ordered)
-CREATE TABLE `order_items` (
+
+order_items table 
+Columns: id, order_id, food_id, quantity, price.
+
+
+DESCRIBE order_items;
+
+
+
+id	int(11)	NO	PRI	NULL	auto_increment	
+order_id	int(11)	NO	MUL	NULL		
+food_id	int(11)	NO	MUL	NULL		
+quantity	int(11)	NO		1		
+price	decimal(10,2)	NO		NULL		
+
+
+
+
+
+-- PAYMENTS TABLE (for tracking all payment attempts)
+CREATE TABLE `payments` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `order_id` INT NOT NULL,
-    `food_id` INT NOT NULL, 
-    `quantity` INT NOT NULL,
-    `price` DECIMAL(10,2) NOT NULL, 
-    FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`),
-    FOREIGN KEY (`food_id`) REFERENCES `food_items`(`id`)
+    `order_id` VARCHAR(100) NOT NULL,
+    `pidx` VARCHAR(100) NOT NULL COMMENT 'Khalti payment ID',
+    `user_id` INT NOT NULL,
+    `amount` DECIMAL(10,2) NOT NULL,
+    `status` ENUM('pending','completed','failed') DEFAULT 'pending',
+    `payment_method` ENUM('khalti','cod') DEFAULT NULL,
+    `transaction_id` VARCHAR(100) DEFAULT NULL,
+    `details` TEXT COMMENT 'JSON payload from payment gateway',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
+    INDEX (`order_id`),
+    INDEX (`pidx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

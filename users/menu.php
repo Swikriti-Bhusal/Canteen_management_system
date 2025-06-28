@@ -30,20 +30,74 @@ function searchFoodItems($items, $query) {
     return $results;
 }
 
-// ===== 2. RECOMMENDATION FUNCTION ===== //
+// ===== 2. RECOMMENDATION FUNCTION ALGORITHM ===== //
 function getRecommendedItems($user_id, $conn) {
-    $query = "SELECT fi.* FROM food_items fi
-              JOIN order_items oi ON fi.id = oi.food_id
-              JOIN orders o ON oi.order_id = o.id
-              WHERE o.user_id = $user_id
-              ORDER BY o.created_at DESC LIMIT 3";
-    return mysqli_query($conn, $query)->fetch_all(MYSQLI_ASSOC);
+    // Step 1: Get all data we need
+    $allOrders = $conn->query("SELECT * FROM orders")->fetch_all(MYSQLI_ASSOC);
+    $allOrderItems = $conn->query("SELECT * FROM order_items")->fetch_all(MYSQLI_ASSOC);
+    $allFoodItems = $conn->query("SELECT * FROM food_items")->fetch_all(MYSQLI_ASSOC);
+    
+    // Step 2: Find current user's orders
+    $userOrders = array_filter($allOrders, function($order) use ($user_id) {
+        return $order['user_id'] == $user_id;
+    });
+    
+    // If user has no orders, return popular items
+    if (empty($userOrders)) {
+        return array_slice($allFoodItems, 0, 3);
+    }
+    
+    // Step 3: Find items the user has ordered
+    $userOrderIds = array_column($userOrders, 'id');
+    $userOrderedItems = array_filter($allOrderItems, function($item) use ($userOrderIds) {
+        return in_array($item['order_id'], $userOrderIds);
+    });
+    
+    // Step 4: Find similar users (who ordered the same items)
+    $similarUsers = [];
+    foreach ($allOrderItems as $item) {
+        if (in_array($item['order_id'], $userOrderIds)) continue;
+        
+        foreach ($userOrderedItems as $userItem) {
+            if ($item['food_id'] == $userItem['food_id']) {
+                $similarUsers[$item['order_id']] = true;
+                break;
+            }
+        }
+    }
+    
+    // Step 5: Find popular items among similar users
+    $similarItems = [];
+    foreach ($allOrderItems as $item) {
+        if (isset($similarUsers[$item['order_id']])) {
+            if (!isset($similarItems[$item['food_id']])) {
+                $similarItems[$item['food_id']] = 0;
+            }
+            $similarItems[$item['food_id']]++;
+        }
+    }
+    
+    // Step 6: Sort and get top recommendations
+    arsort($similarItems);
+    $recommendedFoodIds = array_slice(array_keys($similarItems), 0, 3);
+    
+    $recommendations = array_filter($allFoodItems, function($item) use ($recommendedFoodIds) {
+        return in_array($item['id'], $recommendedFoodIds);
+    });
+    
+    // Add popular items if we don't have enough recommendations
+    if (count($recommendations) < 3) {
+        $popularItems = array_slice($allFoodItems, 0, 3 - count($recommendations));
+        $recommendations = array_merge($recommendations, $popularItems);
+    }
+    
+    return array_values($recommendations);
 }
 
 // Apply search if query exists
 if (!empty($searchQuery)) {
     $foodItems = searchFoodItems($foodItems, $searchQuery);
-    $showRecommendations = false; // Hide recommendations when searching
+    $showRecommendations = false;
 } else {
     $showRecommendations = isset($_SESSION['user_id']);
     $recommendations = $showRecommendations ? getRecommendedItems($_SESSION['user_id'], $conn) : [];
@@ -56,7 +110,7 @@ if (!empty($searchQuery)) {
     <title>Our Menu</title>
     <link rel="stylesheet" href="./cms/style.css">
     <style>
-         body {
+        body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -221,8 +275,6 @@ if (!empty($searchQuery)) {
             <div class="cart-message"><?= htmlspecialchars($cart_message) ?></div>
         <?php endif; ?>
 
-       
-
         <!-- Category Tabs -->
         <div class="tabs">
             <a href="?category=All" class="tab <?= $category === 'All' ? 'active' : '' ?>">All Items</a>
@@ -258,10 +310,11 @@ if (!empty($searchQuery)) {
                 </div>
             <?php endif; ?>
         </div>
-         <!-- Recommendations Section -->
+
+        <!-- Recommendations Section -->
         <?php if ($showRecommendations && !empty($recommendations)): ?>
         <div class="recommendations-section">
-<h3 style="text-align: center;">Recommended For You</h3>
+            <h3 style="text-align: center;">Recommended For You</h3>
             <div class="menu-grid">
                 <?php foreach ($recommendations as $item): ?>
                 <div class="food-card">

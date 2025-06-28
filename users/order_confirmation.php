@@ -1,20 +1,30 @@
+
 <?php
 session_start();
-require_once '../config.php'; // Contains MySQLi connection ($conn)
+require_once '../config.php';
+
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-// Get order ID from URL
-$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+$order_reference = isset($_GET['order_id']) ? $_GET['order_id'] : '';
+$order_id = intval($order_reference);
 
-// Fetch order details
-$order = [];
-$order_items = [];
-$order_sql = "SELECT * FROM orders WHERE id = ? AND user_id = ?";
+$order_sql = "SELECT *, 
+              CASE 
+                WHEN payment_method = 'khalti' THEN 'Paid via Khalti'
+                WHEN payment_method = 'cod' THEN 'Cash on Delivery'
+                ELSE 'Payment Pending'
+              END as payment_status_text
+              FROM orders WHERE id = ? AND user_id = ?";
+
 $order_stmt = mysqli_prepare($conn, $order_sql);
+if (!$order_stmt) {
+    die("Prepare failed: (" . mysqli_errno($conn) . ") " . mysqli_error($conn));
+}
+
 mysqli_stmt_bind_param($order_stmt, "ii", $order_id, $_SESSION['user_id']);
 mysqli_stmt_execute($order_stmt);
 $order_result = mysqli_stmt_get_result($order_stmt);
@@ -25,17 +35,23 @@ if (!$order) {
     die("Order not found or doesn't belong to you");
 }
 
-// Fetch order items - CORRECTED JOIN CONDITION
+// Fetch order items
 $items_sql = "SELECT oi.*, fi.name 
               FROM order_items oi
               JOIN food_items fi ON oi.food_id = fi.id
               WHERE oi.order_id = ?";
 $items_stmt = mysqli_prepare($conn, $items_sql);
+$order_id = $order['id'];
 mysqli_stmt_bind_param($items_stmt, "i", $order_id);
 mysqli_stmt_execute($items_stmt);
 $items_result = mysqli_stmt_get_result($items_stmt);
 $order_items = mysqli_fetch_all($items_result, MYSQLI_ASSOC);
 mysqli_stmt_close($items_stmt);
+
+// Determine status color
+$status_color = '#4CAF50'; // Green
+if ($order['status'] == 'pending') $status_color = '#FFC107'; // Yellow
+if ($order['status'] == 'cancelled') $status_color = '#F44336'; // Red
 ?>
 
 <!DOCTYPE html>
@@ -75,6 +91,7 @@ mysqli_stmt_close($items_stmt);
             background: #f9f9f9;
             padding: 15px;
             border-radius: 4px;
+            margin-bottom: 20px;
         }
         .order-item {
             display: flex;
@@ -107,12 +124,23 @@ mysqli_stmt_close($items_stmt);
         }
         .order-status {
             padding: 5px 10px;
-            background: #4CAF50;
+            background: <?= $status_color ?>;
             color: white;
             border-radius: 4px;
             font-size: 0.9rem;
             display: inline-block;
             margin-bottom: 15px;
+        }
+        .payment-method {
+            margin: 15px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 4px;
+        }
+        .khalti-logo {
+            height: 20px;
+            vertical-align: middle;
+            margin-left: 5px;
         }
     </style>
 </head>
@@ -127,6 +155,15 @@ mysqli_stmt_close($items_stmt);
         <div class="order-details">
             <div class="order-number">Order #<?= $order['id'] ?></div>
             <div class="order-status"><?= ucfirst($order['status']) ?></div>
+            
+            <div class="payment-method">
+                <strong>Payment Method:</strong> 
+                <?= $order['payment_status_text'] ?>
+                <?php if ($order['payment_method'] == 'khalti'): ?>
+                    <img src="https://khalti.com/static/khalti-logo.svg" alt="Khalti" class="khalti-logo">
+                <?php endif; ?>
+            </div>
+            
             <p>Order placed on <?= date('F j, Y \a\t g:i a', strtotime($order['created_at'])) ?></p>
         </div>
 
@@ -144,6 +181,12 @@ mysqli_stmt_close($items_stmt);
         </div>
 
         <a href="menu.php" class="btn">Continue Shopping</a>
+        
+        <?php if ($order['payment_method'] == 'khalti'): ?>
+            <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                <p>Your Khalti payment was successful. A receipt has been sent to your registered Khalti account.</p>
+            </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>

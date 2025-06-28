@@ -3,7 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require '../config.php'; // Ensure this contains your MySQLi connection ($conn)
+require '../config.php'; //  MySQLi connection ($conn)
 
 // Debugging logs
 error_log("==== CART REMOVAL REQUEST ==== " . date('Y-m-d H:i:s'));

@@ -46,13 +46,14 @@ if (empty($address)) {
 
 if (empty($password)) {
     $errors['password'] = "Password is required";
-} elseif (strlen($password) < 4) {
-    $errors['password'] = "Password must be at least 4 characters";
-} elseif (!preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password)) {
-    $errors['password'] = "Password must contain at least 1 letter and 1 number";
+} elseif (strlen($password) < 8) {
+    $errors['password'] = "Password must be at least 8 characters long";
+} elseif (!preg_match('/[A-Za-z]/', $password)) {
+    $errors['password'] = "Password must contain at least one letter";
+} elseif (!preg_match('/\d/', $password)) {
+    $errors['password'] = "Password must contain at least one digit";
 }
   
-    
     // Check if username/email already exists
     if (empty($errors)) {
         $check_query = "SELECT * FROM users WHERE username = ? OR email = ?";

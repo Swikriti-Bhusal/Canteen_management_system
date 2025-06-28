@@ -139,7 +139,7 @@ foreach ($cartItems as $item) {
         <h1>Your Shopping Cart</h1>
     </div>
 
-    <?php if (!empty($cartItems)): ?>
+      <?php if (!empty($cartItems)): ?>
         <table class="cart-table">
             <thead>
                 <tr>
