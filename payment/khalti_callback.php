@@ -2,14 +2,14 @@
 session_start();
 require_once '../config.php';
 
-// Check if pidx is provided
-if (!isset($_GET['pidx'])) {
-    die("Invalid redirect - PIDX missing.");
+//  1. Check if pidx is present
+if (!isset($_GET['pidx']) || empty($_GET['pidx'])) {
+    die(" Invalid redirect: PIDX missing.");
 }
 
 $pidx = $_GET['pidx'];
 
-// Set up headers for Khalti API
+//  2. Prepare headers for API lookup
 $headers = [
     "Authorization: Key " . KHALTI_SECRET_KEY,
     "Content-Type: application/json"
@@ -17,7 +17,7 @@ $headers = [
 
 $lookup_data = json_encode(['pidx' => $pidx]);
 
-// Make API request to Khalti
+// 3. Make lookup request to Khalti
 $curl = curl_init();
 curl_setopt_array($curl, [
     CURLOPT_URL => "https://a.khalti.com/api/v2/epayment/lookup/",
@@ -31,39 +31,36 @@ $response = curl_exec($curl);
 $curl_error = curl_error($curl);
 curl_close($curl);
 
-// Check for cURL errors
+//  4. Handle cURL errors
 if ($curl_error) {
-    die("cURL error: " . $curl_error);
+    die(" cURL Error: $curl_error");
 }
 
 $result = json_decode($response, true);
 
-// Log response for debugging
+//  5. Debug log
 file_put_contents('khalti_callback_log.txt', print_r($result, true));
 
-// Verify payment status
+//  6. Check if payment was completed
 if (isset($result['status']) && $result['status'] === 'Completed') {
-    // Extract data from response
-    $total_amount = isset($result['total_amount']) ? $result['total_amount'] / 100 : null;
-    $order_id = $pidx; // Use pidx as order_id
-    $payment_id = isset($result['transaction_id']) ? $result['transaction_id'] : $pidx; // Use transaction_id or fallback to pidx
+    $total_amount = isset($result['total_amount']) ? $result['total_amount'] / 100 : 0;
+    $payment_id = $result['transaction_id'] ?? $pidx;
+    $order_id = $pidx;
 
-    if ($total_amount === null) {
-        die("Error: Total amount not provided in Khalti response.");
-    }
+    //  7. Fetch user and cart session data
+    $user_id = $_SESSION['user_id'] ?? null;
+    $cart_items = isset($_SESSION['cart_items']) ? $_SESSION['cart_items'] : [];
 
-    // Get user and cart data
-    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-    $cart_items = isset($_SESSION['cart_items']) ? json_decode($_SESSION['cart_items'], true) : [];
+    // $cart_items = isset($_SESSION['cart_items']) ? json_decode($_SESSION['cart_items'], true) : [];
 
     if (!$user_id || empty($cart_items)) {
-        die("Error: User ID or cart items missing.");
+        die(" Error: Missing user ID or cart.");
     }
 
-    // Generate order_reference
+    //  8. Generate order_reference
     $order_reference = 'ORD-' . time() . '-' . $user_id;
 
-    // Prepare SQL query
+    //  9. Insert into orders table
     $stmt = $conn->prepare("
         INSERT INTO orders (
             user_id, 
@@ -76,29 +73,43 @@ if (isset($result['status']) && $result['status'] === 'Completed') {
             order_id
         ) VALUES (?, ?, ?, 'paid', 'khalti', ?, NOW(), ?)
     ");
+
     if (!$stmt) {
-        die("Prepare failed: " . $conn->error);
+        die(" DB Error (Prepare): " . $conn->error);
     }
 
-    // Bind parameters
     $stmt->bind_param("issss", $user_id, $order_reference, $total_amount, $payment_id, $order_id);
+
     if (!$stmt->execute()) {
-        die("Execute failed: " . $stmt->error);
+        die(" DB Error (Execute): " . $stmt->error);
     }
+
     $stmt->close();
 
-    // Clear cart after successful order
+    //  10. Clear cart
     unset($_SESSION['cart_items']);
 
-    // Display success message with Continue Shopping button
+    //  11. Success message
     echo "
-        <h3>Payment Successful! Order ID: $order_id</h3>
-        <p>Thank you for your purchase!</p>
-        <a href='/cms/index.php' style='display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;'>Continue Shopping</a>
+        <div style='font-family: Arial; padding: 40px; text-align: center;'>
+            <h2 style='color: #28a745;'>🎉 Payment Successful!</h2>
+            <p>Order Reference: <strong>$order_reference</strong></p>
+            <p>Transaction ID: <strong>$payment_id</strong></p>
+            <a href='/cms/users/menu.php' style='
+                display: inline-block; 
+                padding: 12px 24px; 
+                background-color: #007bff; 
+                color: #fff; 
+                border-radius: 5px; 
+                text-decoration: none;
+                margin-top: 20px;
+            '>Continue Shopping</a>
+        </div>
     ";
 } else {
-    echo "<h3>Payment failed or cancelled.</h3>";
-    print_r($result);
+    // Payment failed or not completed
+    echo "<h3 style='color: red;'> Payment failed or was cancelled.</h3>";
+    echo "<pre>" . print_r($result, true) . "</pre>";
 }
 
 $conn->close();

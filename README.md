@@ -58,9 +58,6 @@ Columns: id, order_id, food_id, quantity, price.
 
 
 DESCRIBE order_items;
-
-
-
 id	int(11)	NO	PRI	NULL	auto_increment	
 order_id	int(11)	NO	MUL	NULL		
 food_id	int(11)	NO	MUL	NULL		
@@ -69,22 +66,3 @@ price	decimal(10,2)	NO		NULL
 
 
 
-
-
--- PAYMENTS TABLE (for tracking all payment attempts)
-CREATE TABLE `payments` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `order_id` VARCHAR(100) NOT NULL,
-    `pidx` VARCHAR(100) NOT NULL COMMENT 'Khalti payment ID',
-    `user_id` INT NOT NULL,
-    `amount` DECIMAL(10,2) NOT NULL,
-    `status` ENUM('pending','completed','failed') DEFAULT 'pending',
-    `payment_method` ENUM('khalti','cod') DEFAULT NULL,
-    `transaction_id` VARCHAR(100) DEFAULT NULL,
-    `details` TEXT COMMENT 'JSON payload from payment gateway',
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`),
-    INDEX (`order_id`),
-    INDEX (`pidx`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

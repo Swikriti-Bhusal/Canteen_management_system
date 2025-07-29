@@ -540,17 +540,17 @@ body {
                         <div class="team-member">
                             <img src="../cms/uploads/swi.jpg" alt="Team Member 1">
                             <h3>Miss swikriti</h3>
-                            <p>Head Chef</p>
-                        </div>
-                        <div class="team-member">
-                            <img src="../cms/uploads/team1.jpg" alt="Team Member 2">
-                            <h3>Mr Zayn</h3>
                             <p>Manager</p>
                         </div>
-                        <div class="team-member">
-                            <img src="../cms/uploads/team3.jpg" alt="Team Member 3">
+                          <div class="team-member">
+                            <img src="../cms/uploads/team3.jpg" alt="Team Member 2">
                             <h3>Miss Barsha</h3>
                             <p>Customer Support</p>
+                        </div>
+                        <div class="team-member">
+                            <img src="../cms/uploads/swii.jpg" alt="Team Member 3">
+                            <h3>Miss Swiikriitiii</h3>
+                            <p>Head Chef</p>
                         </div>
                     </div>
                 </div>

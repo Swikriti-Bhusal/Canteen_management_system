@@ -5,11 +5,13 @@ require_once '../config.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Redirect if user not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
     exit;
 }
 
+// Fetch cart items
 $cart_sql = "SELECT c.*, f.name, f.price 
              FROM cart c
              JOIN food_items f ON c.food_id = f.id
@@ -21,16 +23,14 @@ $cart_result = mysqli_stmt_get_result($cart_stmt);
 $cartItems = mysqli_fetch_all($cart_result, MYSQLI_ASSOC);
 mysqli_stmt_close($cart_stmt);
 
+// Calculate total
 $total = 0;
 foreach ($cartItems as $item) {
     $total += $item['price'] * $item['quantity'];
 }
 
-// $temp_order_id = 'ORD_' . time() . '_' . rand(1000, 9999) . '_' . $_SESSION['user_id'];
+// Generate unique order ID
 $temp_order_id = 'ORD_' . uniqid('', true) . '_' . $_SESSION['user_id'];
-
-
-// $temp_order_id = 'ORDER_' . time() . '_' . $_SESSION['user_id'];
 ?>
 
 <!DOCTYPE html>
@@ -68,7 +68,6 @@ $temp_order_id = 'ORD_' . uniqid('', true) . '_' . $_SESSION['user_id'];
             padding: 12px 16px;
             margin-bottom: 10px;
             border-radius: 6px;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
         }
@@ -77,9 +76,6 @@ $temp_order_id = 'ORD_' . uniqid('', true) . '_' . $_SESSION['user_id'];
             font-size: 1.2rem;
             margin-bottom: 30px;
             color: #111827;
-        }
-        form {
-            margin-bottom: 15px;
         }
         button {
             width: 100%;
@@ -94,6 +90,7 @@ $temp_order_id = 'ORD_' . uniqid('', true) . '_' . $_SESSION['user_id'];
         .btn-khalti {
             background-color: #5C2D91;
             color: white;
+            margin-bottom: 10px;
         }
         .btn-khalti:hover {
             background-color: #4a2473;
@@ -108,39 +105,35 @@ $temp_order_id = 'ORD_' . uniqid('', true) . '_' . $_SESSION['user_id'];
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Confirm Your Order</h2>
-        <ul>
-            <?php foreach ($cartItems as $item): ?>
-                <li>
-                    <span><?= htmlspecialchars($item['name']) ?> x <?= $item['quantity'] ?></span>
-                    <span>Rs <?= $item['price'] * $item['quantity'] ?></span>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-        <h3>Total: Rs <?= $total ?></h3>
+<div class="container">
+    <h2>Confirm Your Order</h2>
+    <ul>
+        <?php foreach ($cartItems as $item): ?>
+            <li>
+                <span><?= htmlspecialchars($item['name']) ?> x <?= $item['quantity'] ?></span>
+                <span>Rs <?= $item['price'] * $item['quantity'] ?></span>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+    <h3>Total: Rs <?= $total ?></h3>
 
-        <form action="../payment/initiate_khalti.php" method="POST">
-            <button id="pay-khalti" class="btn-khalti">Pay with Khalti</button>
+    <!-- Khalti Payment Button -->
+    <button id="pay-khalti" class="btn-khalti">Pay with Khalti</button>
 
-            <input type="hidden" name="amount" value="<?= $total * 100 ?>">
-            <input type="hidden" name="order_id" value="<?= $temp_order_id ?>">
-            <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>">
-            <input type="hidden" name="cart_items" value="<?= htmlspecialchars(json_encode($cartItems)) ?>">
-            <button type="submit" class="btn-khalti">Pay with Khalti</button>
-        </form>
+    <!--  Cash on Delivery Form -->
+    <form action="../payment/process_cod.php" method="POST">
+        <input type="hidden" name="payment_method" value="cod">
+        <input type="hidden" name="total_amount" value="<?= $total ?>">
+        <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>">
+        <input type="hidden" name="cart_items" value="<?= htmlspecialchars(json_encode($cartItems)) ?>">
+        <button type="submit" class="btn-cod">Cash on Delivery</button>
+    </form>
+</div>
 
-        <form action="../payment/process_cod.php" method="POST">
-            <input type="hidden" name="payment_method" value="cod">
-            <input type="hidden" name="total_amount" value="<?= $total ?>">
-            <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>">
-            <input type="hidden" name="cart_items" value="<?= htmlspecialchars(json_encode($cartItems)) ?>">
-            <button type="submit" class="btn-cod">Cash on Delivery</button>
-        </form>
-    </div>
-    <script>
+<!--  Khalti fetch() Script -->
+<script>
 document.getElementById("pay-khalti").addEventListener("click", function () {
-    this.disabled = true; // prevent double clicks
+    this.disabled = true;
 
     fetch("../payment/initiate_khalti.php", {
         method: "POST",
@@ -156,19 +149,20 @@ document.getElementById("pay-khalti").addEventListener("click", function () {
     })
     .then(res => res.json())
     .then(data => {
-        if (data.payment_url) {
+        if (data.success && data.payment_url) {
             window.location.href = data.payment_url;
         } else {
-            alert("Payment initiation failed. Try again.");
-            console.log(data);
+            alert(" Khalti Error: " + (data.message || "Something went wrong."));
+            console.log(data.response || data);
+            document.getElementById("pay-khalti").disabled = false;
         }
     })
     .catch(err => {
-        alert("Error: " + err.message);
+        alert(" Network Error: " + err.message);
         console.error(err);
+        document.getElementById("pay-khalti").disabled = false;
     });
 });
 </script>
-
 </body>
 </html>
